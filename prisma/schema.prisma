@@ -94,8 +94,38 @@ model Category {
   deletedAt   DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  items       Item[]
 
   @@map("category")
+}
+
+model Item {
+  id          String      @id @default(ulid())
+  name        String
+  description String?     @db.Text
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id])
+  deletedAt   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  stocks      ItemStock[]
+
+  @@index([name])
+  @@index([categoryId])
+  @@map("item")
+}
+
+model ItemStock {
+  id        String   @id @default(ulid())
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  unit      String   @default("pcs")
+  quantity  Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([itemId])
+  @@map("item_stock")
 }
 
 model Verification {

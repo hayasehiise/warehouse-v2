@@ -67,6 +67,16 @@ export type Account = Prisma.AccountModel
  */
 export type Category = Prisma.CategoryModel
 /**
+ * Model Item
+ * 
+ */
+export type Item = Prisma.ItemModel
+/**
+ * Model ItemStock
+ * 
+ */
+export type ItemStock = Prisma.ItemStockModel
+/**
  * Model Verification
  * 
  */

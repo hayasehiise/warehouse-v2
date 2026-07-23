@@ -68,28 +68,35 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import {
-  getCategories,
-  createCategory,
-  updateCategory,
-  softDeleteCategory,
-  forceDeleteCategory,
-  restoreCategory,
-  type CategoryRow,
+  getItems,
+  createItem,
+  updateItem,
+  softDeleteItem,
+  forceDeleteItem,
+  restoreItem,
+  getCategoriesOptions,
+  getItemUnits,
+  type ItemRow,
   type FormData,
-} from "@/lib/actions/category";
+  type CategoryOption,
+} from "@/lib/actions/item";
 
 const formSchema = z.object({
-  name: z.string().min(1, "Nama kategori harus diisi"),
+  name: z.string().min(1, "Nama barang harus diisi"),
   description: z.string().optional(),
+  categoryId: z.string().min(1, "Kategori harus dipilih"),
+  unit: z.string().min(1, "Unit harus diisi"),
 });
 
 type FilterTab = "active" | "deleted";
 
-export default function CategoryClient() {
+export default function ItemClient() {
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterTab>("active");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [unitFilter, setUnitFilter] = useState("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -98,7 +105,7 @@ export default function CategoryClient() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const [deleteTarget, setDeleteTarget] = useState<CategoryRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ItemRow | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const queryParams = useMemo(
@@ -107,32 +114,46 @@ export default function CategoryClient() {
       pageSize: pagination.pageSize,
       search: search || undefined,
       filter,
+      categoryId: categoryFilter || undefined,
+      unit: unitFilter || undefined,
     }),
-    [pagination.pageIndex, pagination.pageSize, search, filter],
+    [pagination.pageIndex, pagination.pageSize, search, filter, categoryFilter, unitFilter],
   );
 
   const { data, isLoading } = useQuery({
-    queryKey: ["categories", queryParams],
-    queryFn: () => getCategories(queryParams),
+    queryKey: ["items", queryParams],
+    queryFn: () => getItems(queryParams),
     placeholderData: (prev) => prev,
+  });
+
+  const { data: categories } = useQuery({
+    queryKey: ["categories", "options"],
+    queryFn: () => getCategoriesOptions(),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const { data: units } = useQuery({
+    queryKey: ["items", "units"],
+    queryFn: () => getItemUnits(),
+    staleTime: 1000 * 60 * 5,
   });
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: "", description: "" },
+    defaultValues: { name: "", description: "", categoryId: "", unit: "pcs" },
   });
 
   const saveMutation = useMutation({
     mutationFn: async (values: FormData) => {
       if (editingId) {
-        return updateCategory(editingId, values);
+        return updateItem(editingId, values);
       }
-      return createCategory(values);
+      return createItem(values);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["items"] });
       setIsDialogOpen(false);
-      form.reset({ name: "", description: "" });
+      form.reset({ name: "", description: "", categoryId: "", unit: "pcs" });
       setEditingId(null);
     },
   });
@@ -141,34 +162,39 @@ export default function CategoryClient() {
     mutationFn: async () => {
       if (!deleteTarget) return;
       if (filter === "deleted") {
-        return forceDeleteCategory(deleteTarget.id);
+        return forceDeleteItem(deleteTarget.id);
       }
-      return softDeleteCategory(deleteTarget.id);
+      return softDeleteItem(deleteTarget.id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["items"] });
       setIsDeleteOpen(false);
       setDeleteTarget(null);
     },
   });
 
   const restoreMutation = useMutation({
-    mutationFn: (id: string) => restoreCategory(id),
+    mutationFn: (id: string) => restoreItem(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["items"] });
     },
   });
 
   const openCreate = useCallback(() => {
     setEditingId(null);
-    form.reset({ name: "", description: "" });
+    form.reset({ name: "", description: "", categoryId: "", unit: "pcs" });
     setIsDialogOpen(true);
   }, [form]);
 
   const openEdit = useCallback(
-    (cat: CategoryRow) => {
-      setEditingId(cat.id);
-      form.reset({ name: cat.name, description: cat.description ?? "" });
+    (item: ItemRow) => {
+      setEditingId(item.id);
+      form.reset({
+        name: item.name,
+        description: item.description ?? "",
+        categoryId: item.categoryId,
+        unit: item.stocks.length > 0 ? item.stocks[0].unit : "pcs",
+      });
       setIsDialogOpen(true);
     },
     [form],
@@ -189,7 +215,7 @@ export default function CategoryClient() {
     deleteMutation.mutate();
   };
 
-  const columns = useMemo<ColumnDef<CategoryRow>[]>(
+  const columns = useMemo<ColumnDef<ItemRow>[]>(
     () => [
       {
         accessorKey: "name",
@@ -199,14 +225,30 @@ export default function CategoryClient() {
         ),
       },
       {
-        accessorKey: "description",
-        header: "Deskripsi",
-        cell: ({ getValue }) => {
-          const v = getValue() as string | null;
+        accessorKey: "categoryName",
+        header: "Kategori",
+        cell: ({ getValue }) => (
+          <span className="text-muted-foreground">
+            {getValue() as string}
+          </span>
+        ),
+      },
+      {
+        id: "unit",
+        header: "Unit",
+        cell: ({ row }) => {
+          const stocks = row.original.stocks;
           return (
-            <span className="text-muted-foreground">
-              {v || "\u2014"}
-            </span>
+            <div className="flex flex-wrap gap-1">
+              {stocks.map((s) => (
+                <span
+                  key={s.id}
+                  className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium"
+                >
+                  {s.unit}
+                </span>
+              ))}
+            </div>
           );
         },
       },
@@ -214,7 +256,7 @@ export default function CategoryClient() {
         id: "actions",
         header: () => <span className="sr-only">Aksi</span>,
         cell: ({ row }) => {
-          const cat = row.original;
+          const item = row.original;
           if (filter === "deleted") {
             return (
               <div className="flex items-center justify-end">
@@ -228,7 +270,7 @@ export default function CategoryClient() {
                   />
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
-                      onClick={() => handleRestore(cat.id)}
+                      onClick={() => handleRestore(item.id)}
                     >
                       <RotateCcw className="size-4" />
                       Pulihkan
@@ -237,7 +279,7 @@ export default function CategoryClient() {
                     <DropdownMenuItem
                       variant="destructive"
                       onClick={() => {
-                        setDeleteTarget(cat);
+                        setDeleteTarget(item);
                         setIsDeleteOpen(true);
                       }}
                     >
@@ -260,7 +302,7 @@ export default function CategoryClient() {
                   }
                 />
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => openEdit(cat)}>
+                  <DropdownMenuItem onClick={() => openEdit(item)}>
                     <Pencil className="size-4" />
                     Edit
                   </DropdownMenuItem>
@@ -268,7 +310,7 @@ export default function CategoryClient() {
                   <DropdownMenuItem
                     variant="destructive"
                     onClick={() => {
-                      setDeleteTarget(cat);
+                      setDeleteTarget(item);
                       setIsDeleteOpen(true);
                     }}
                   >
@@ -302,14 +344,14 @@ export default function CategoryClient() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Kategori</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Barang</h1>
           <p className="text-sm text-muted-foreground">
-            Kelola kategori barang
+            Kelola data barang
           </p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="size-4" />
-          Tambah Kategori
+          Tambah Barang
         </Button>
       </div>
 
@@ -319,7 +361,7 @@ export default function CategoryClient() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Cari kategori..."
+                placeholder="Cari barang..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -353,6 +395,52 @@ export default function CategoryClient() {
               </Button>
             </div>
           </div>
+          <div className="flex items-center gap-4">
+            <Select
+              value={categoryFilter}
+              onValueChange={(v) => {
+                setCategoryFilter(v ?? "");
+                setPagination((p) => ({ ...p, pageIndex: 0 }));
+              }}
+            >
+              <SelectTrigger className="w-52">
+                <SelectValue placeholder="Semua Kategori">
+                  {categoryFilter
+                    ? categories?.find((c) => c.id === categoryFilter)?.name
+                    : "Semua Kategori"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Semua Kategori</SelectItem>
+                {categories?.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={unitFilter}
+              onValueChange={(v) => {
+                setUnitFilter(v ?? "");
+                setPagination((p) => ({ ...p, pageIndex: 0 }));
+              }}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Semua Unit">
+                  {unitFilter || "Semua Unit"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Semua Unit</SelectItem>
+                {units?.map((unit) => (
+                  <SelectItem key={unit} value={unit}>
+                    {unit}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
 
         <CardContent className="p-0">
@@ -363,10 +451,10 @@ export default function CategoryClient() {
           ) : rows.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
               {search
-                ? "Kategori tidak ditemukan"
+                ? "Barang tidak ditemukan"
                 : filter === "deleted"
-                  ? "Tidak ada kategori yang terhapus"
-                  : "Belum ada kategori"}
+                  ? "Tidak ada barang yang terhapus"
+                  : "Belum ada barang"}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -462,15 +550,15 @@ export default function CategoryClient() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent showCloseButton={false} className="sm:max-w-md">
+        <DialogContent showCloseButton={false} className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {editingId ? "Edit Kategori" : "Tambah Kategori"}
+              {editingId ? "Edit Barang" : "Tambah Barang"}
             </DialogTitle>
             <DialogDescription>
               {editingId
-                ? "Ubah detail kategori"
-                : "Buat kategori barang baru"}
+                ? "Ubah detail barang"
+                : "Buat data barang baru"}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSave}>
@@ -480,7 +568,7 @@ export default function CategoryClient() {
                 <Input
                   id="name"
                   {...form.register("name")}
-                  placeholder="Nama kategori"
+                  placeholder="Nama barang"
                   aria-invalid={!!form.formState.errors.name}
                 />
                 {form.formState.errors.name && (
@@ -490,13 +578,51 @@ export default function CategoryClient() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Deskripsi</Label>
+                <Label htmlFor="categoryId">Kategori</Label>
+                <Select
+                  value={form.watch("categoryId")}
+                  onValueChange={(v) => { if (v) form.setValue("categoryId", v); }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Pilih kategori">
+                      {categories?.find(c => c.id === form.watch("categoryId"))?.name}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories?.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {form.formState.errors.categoryId && (
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.categoryId.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label>Deskripsi</Label>
                 <Textarea
-                  id="description"
                   {...form.register("description")}
                   placeholder="Deskripsi (opsional)"
                   rows={3}
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="unit">Unit Stok</Label>
+                <Input
+                  id="unit"
+                  {...form.register("unit")}
+                  placeholder="Contoh: pcs, kg, box"
+                  aria-invalid={!!form.formState.errors.unit}
+                />
+                {form.formState.errors.unit && (
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.unit.message}
+                  </p>
+                )}
               </div>
             </div>
             <DialogFooter className="mt-6">
@@ -523,8 +649,8 @@ export default function CategoryClient() {
           <AlertDialogHeader>
             <AlertDialogTitle>
               {filter === "deleted"
-                ? "Hapus Permanen Kategori"
-                : "Hapus Kategori"}
+                ? "Hapus Permanen Barang"
+                : "Hapus Barang"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {filter === "deleted" ? (
@@ -537,7 +663,7 @@ export default function CategoryClient() {
                 </>
               ) : (
                 <>
-                  Kategori{" "}
+                  Barang{" "}
                   <span className="font-medium text-foreground">
                     {deleteTarget?.name}
                   </span>{" "}

@@ -56,6 +56,8 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Category: 'Category',
+  Item: 'Item',
+  ItemStock: 'ItemStock',
   Verification: 'Verification'
 } as const
 
@@ -152,6 +154,31 @@ export const CategoryScalarFieldEnum = {
 export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
 
 
+export const ItemScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  categoryId: 'categoryId',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ItemScalarFieldEnum = (typeof ItemScalarFieldEnum)[keyof typeof ItemScalarFieldEnum]
+
+
+export const ItemStockScalarFieldEnum = {
+  id: 'id',
+  itemId: 'itemId',
+  unit: 'unit',
+  quantity: 'quantity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ItemStockScalarFieldEnum = (typeof ItemStockScalarFieldEnum)[keyof typeof ItemStockScalarFieldEnum]
+
+
 export const VerificationScalarFieldEnum = {
   id: 'id',
   identifier: 'identifier',
@@ -240,6 +267,25 @@ export const CategoryOrderByRelevanceFieldEnum = {
 } as const
 
 export type CategoryOrderByRelevanceFieldEnum = (typeof CategoryOrderByRelevanceFieldEnum)[keyof typeof CategoryOrderByRelevanceFieldEnum]
+
+
+export const ItemOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  categoryId: 'categoryId'
+} as const
+
+export type ItemOrderByRelevanceFieldEnum = (typeof ItemOrderByRelevanceFieldEnum)[keyof typeof ItemOrderByRelevanceFieldEnum]
+
+
+export const ItemStockOrderByRelevanceFieldEnum = {
+  id: 'id',
+  itemId: 'itemId',
+  unit: 'unit'
+} as const
+
+export type ItemStockOrderByRelevanceFieldEnum = (typeof ItemStockOrderByRelevanceFieldEnum)[keyof typeof ItemStockOrderByRelevanceFieldEnum]
 
 
 export const VerificationOrderByRelevanceFieldEnum = {
