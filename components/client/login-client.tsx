@@ -6,6 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@/lib/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ export default function LoginClient() {
   const searchParam = useSearchParams();
   const callbackUrl = searchParam.get("callbackUrl") ?? "/";
   const [isPending, setIsPending] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(loginSchema),
@@ -96,19 +98,30 @@ export default function LoginClient() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Controller
-                name="password"
-                control={form.control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    aria-invalid={!!form.formState.errors.password}
-                  />
-                )}
-              />
+              <div className="relative">
+                <Controller
+                  name="password"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      aria-invalid={!!form.formState.errors.password}
+                      className="pr-10"
+                    />
+                  )}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               {form.formState.errors.password && (
                 <p className="text-xs text-destructive">
                   {form.formState.errors.password.message}
