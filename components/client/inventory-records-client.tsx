@@ -105,29 +105,32 @@ const typeLabels: Record<"MASUK" | "KELUAR", string> = {
   KELUAR: "Keluar",
 };
 
-const statusLabels: Record<"BAIK" | "RUSAK" | "HILANG" | "KADALUARSA", string> = {
-  BAIK: "Baik",
-  RUSAK: "Rusak",
-  HILANG: "Hilang",
-  KADALUARSA: "Kadaluarsa",
-};
+const statusLabels: Record<"BAIK" | "RUSAK" | "HILANG" | "KADALUARSA", string> =
+  {
+    BAIK: "Baik",
+    RUSAK: "Rusak",
+    HILANG: "Hilang",
+    KADALUARSA: "Kadaluarsa",
+  };
 
 const typeColors: Record<"MASUK" | "KELUAR", string> = {
   MASUK: "bg-green-100 text-green-800",
   KELUAR: "bg-red-100 text-red-800",
 };
 
-const statusColors: Record<"BAIK" | "RUSAK" | "HILANG" | "KADALUARSA", string> = {
-  BAIK: "bg-green-100 text-green-800",
-  RUSAK: "bg-yellow-100 text-yellow-800",
-  HILANG: "bg-red-100 text-red-800",
-  KADALUARSA: "bg-purple-100 text-purple-800",
-};
+const statusColors: Record<"BAIK" | "RUSAK" | "HILANG" | "KADALUARSA", string> =
+  {
+    BAIK: "bg-green-100 text-green-800",
+    RUSAK: "bg-yellow-100 text-yellow-800",
+    HILANG: "bg-red-100 text-red-800",
+    KADALUARSA: "bg-purple-100 text-purple-800",
+  };
 
-const statusOptionsByType: Record<"MASUK" | "KELUAR", { value: string; label: string }[]> = {
-  MASUK: [
-    { value: "BAIK", label: "Baik" },
-  ],
+const statusOptionsByType: Record<
+  "MASUK" | "KELUAR",
+  { value: string; label: string }[]
+> = {
+  MASUK: [{ value: "BAIK", label: "Baik" }],
   KELUAR: [
     { value: "RUSAK", label: "Rusak" },
     { value: "HILANG", label: "Hilang" },
@@ -142,15 +145,21 @@ export default function InventoryRecordsClient() {
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "MASUK" | "KELUAR">("all");
-  const [filterStatus, setFilterStatus] = useState<"all" | "BAIK" | "RUSAK" | "HILANG" | "KADALUARSA">("all");
+  const [filterType, setFilterType] = useState<"all" | "MASUK" | "KELUAR">(
+    "all",
+  );
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "BAIK" | "RUSAK" | "HILANG" | "KADALUARSA"
+  >("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
-  const [sorting, setSorting] = useState<SortingState>([{ id: "transactionDate", desc: true }]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "transactionDate", desc: true },
+  ]);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<InventoryRow | null>(null);
@@ -167,14 +176,25 @@ export default function InventoryRecordsClient() {
       itemId,
       page: pagination.pageIndex + 1,
       pageSize: pagination.pageSize,
-      sortBy: (sorting[0]?.id === "quantity" ? "quantity" : "transactionDate") as "transactionDate" | "quantity",
+      sortBy: (sorting[0]?.id === "quantity"
+        ? "quantity"
+        : "transactionDate") as "transactionDate" | "quantity",
       sortOrder: (sorting[0]?.desc ? "desc" : "asc") as "asc" | "desc",
       filterType: filterType === "all" ? undefined : filterType,
       filterStatus: filterStatus === "all" ? undefined : filterStatus,
       dateFrom: dateFrom ? format(dateFrom, "yyyy-MM-dd") : undefined,
       dateTo: dateTo ? format(dateTo, "yyyy-MM-dd") : undefined,
     }),
-    [itemId, pagination.pageIndex, pagination.pageSize, sorting, filterType, filterStatus, dateFrom, dateTo],
+    [
+      itemId,
+      pagination.pageIndex,
+      pagination.pageSize,
+      sorting,
+      filterType,
+      filterStatus,
+      dateFrom,
+      dateTo,
+    ],
   );
 
   const { data, isLoading } = useQuery({
@@ -185,12 +205,14 @@ export default function InventoryRecordsClient() {
   });
 
   const totals = useMemo(() => {
-    const masuk = data?.data
-      .filter((r) => r.type === "MASUK")
-      .reduce((sum, r) => sum + r.quantity, 0) ?? 0;
-    const keluar = data?.data
-      .filter((r) => r.type === "KELUAR")
-      .reduce((sum, r) => sum + r.quantity, 0) ?? 0;
+    const masuk =
+      data?.data
+        .filter((r) => r.type === "MASUK")
+        .reduce((sum, r) => sum + r.quantity, 0) ?? 0;
+    const keluar =
+      data?.data
+        .filter((r) => r.type === "KELUAR")
+        .reduce((sum, r) => sum + r.quantity, 0) ?? 0;
     return { masuk, keluar, balance: masuk - keluar };
   }, [data?.data]);
 
@@ -313,7 +335,9 @@ export default function InventoryRecordsClient() {
           </Button>
         ),
         cell: ({ getValue }) => (
-          <span className="font-medium tabular-nums">{getValue() as number}</span>
+          <span className="font-medium tabular-nums">
+            {getValue() as number}
+          </span>
         ),
       },
       {
@@ -322,7 +346,9 @@ export default function InventoryRecordsClient() {
         cell: ({ getValue }) => {
           const type = getValue() as "MASUK" | "KELUAR";
           return (
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${typeColors[type]}`}>
+            <span
+              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${typeColors[type]}`}
+            >
               {typeLabels[type]}
             </span>
           );
@@ -332,9 +358,15 @@ export default function InventoryRecordsClient() {
         accessorKey: "status",
         header: "Status",
         cell: ({ getValue }) => {
-          const status = getValue() as "BAIK" | "RUSAK" | "HILANG" | "KADALUARSA";
+          const status = getValue() as
+            | "BAIK"
+            | "RUSAK"
+            | "HILANG"
+            | "KADALUARSA";
           return (
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[status]}`}>
+            <span
+              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[status]}`}
+            >
               {statusLabels[status]}
             </span>
           );
@@ -402,11 +434,7 @@ export default function InventoryRecordsClient() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.back()}
-          >
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="size-4" />
           </Button>
           <div>
@@ -421,13 +449,19 @@ export default function InventoryRecordsClient() {
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex items-center gap-6 text-sm text-muted-foreground border-l border-border pl-4">
             <div>
-              <span className="font-medium text-green-600">{totals.masuk}</span> Masuk
+              <span className="font-medium text-green-600">{totals.masuk}</span>{" "}
+              Masuk
             </div>
             <div>
-              <span className="font-medium text-red-600">{totals.keluar}</span> Keluar
+              <span className="font-medium text-red-600">{totals.keluar}</span>{" "}
+              Keluar
             </div>
             <div>
-              <span className="font-medium">{totals.balance >= 0 ? "+" : ""}{totals.balance}</span> Saldo
+              <span className="font-medium">
+                {totals.balance >= 0 ? "+" : ""}
+                {totals.balance}
+              </span>{" "}
+              Saldo
             </div>
           </div>
           <Button onClick={openCreate}>
@@ -441,7 +475,8 @@ export default function InventoryRecordsClient() {
         <CardHeader className="gap-4">
           <CardTitle>Filter & Pencarian</CardTitle>
           <CardDescription>
-            Filter record inventory berdasarkan type, status, dan rentang tanggal
+            Filter record inventory berdasarkan type, status, dan rentang
+            tanggal
           </CardDescription>
           <div className="flex flex-wrap items-center gap-4">
             <div className="relative flex-1 min-w-[250px]">
@@ -476,7 +511,9 @@ export default function InventoryRecordsClient() {
               <Select
                 value={filterStatus}
                 onValueChange={(v) => {
-                  setFilterStatus(v as "all" | "BAIK" | "RUSAK" | "HILANG" | "KADALUARSA");
+                  setFilterStatus(
+                    v as "all" | "BAIK" | "RUSAK" | "HILANG" | "KADALUARSA",
+                  );
                   setPagination((p) => ({ ...p, pageIndex: 0 }));
                 }}
               >
@@ -493,13 +530,15 @@ export default function InventoryRecordsClient() {
               </Select>
             </div>
             <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <Calendar className="size-4" />
-                  <span>Rentang Tanggal</span>
-                  <ChevronDown className="size-4" />
-                </Button>
-              </PopoverTrigger>
+              <PopoverTrigger
+                render={
+                  <Button variant="outline" className="gap-2">
+                    <Calendar className="size-4" />
+                    <span>Rentang Tanggal</span>
+                    <ChevronDown className="size-4" />
+                  </Button>
+                }
+              />
               <PopoverContent className="w-auto p-0" align="start">
                 <div className="p-4 space-y-4 min-w-[480px]">
                   <div className="grid grid-cols-2 gap-4">
@@ -558,9 +597,7 @@ export default function InventoryRecordsClient() {
             </div>
           ) : rows.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
-              {search
-                ? "Record tidak ditemukan"
-                : "Belum ada record inventory"}
+              {search ? "Record tidak ditemukan" : "Belum ada record inventory"}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -690,28 +727,37 @@ export default function InventoryRecordsClient() {
                   value={itemData?.name || ""}
                   className="bg-muted"
                 />
-                <Input
-                  type="hidden"
-                  {...form.register("itemId")}
-                />
+                <Input type="hidden" {...form.register("itemId")} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="transactionDate">Tanggal Transaksi</Label>
                 <Popover>
-                  <PopoverTrigger>
-                    <Input
-                      id="transactionDate"
-                      readOnly
-                      {...form.register("transactionDate")}
-                      placeholder="Pilih tanggal"
-                    />
-                  </PopoverTrigger>
+                  <PopoverTrigger
+                    render={
+                      <Input
+                        id="transactionDate"
+                        readOnly
+                        {...form.register("transactionDate")}
+                        placeholder="Pilih tanggal"
+                      />
+                    }
+                  />
                   <PopoverContent className="w-auto p-0" align="start">
                     <CalendarUI
                       mode="single"
-                      selected={form.watch("transactionDate") ? new Date(form.watch("transactionDate")) : new Date()}
-                      onSelect={(date) => date && form.setValue("transactionDate", format(date, "yyyy-MM-dd"))}
+                      selected={
+                        form.watch("transactionDate")
+                          ? new Date(form.watch("transactionDate"))
+                          : new Date()
+                      }
+                      onSelect={(date) =>
+                        date &&
+                        form.setValue(
+                          "transactionDate",
+                          format(date, "yyyy-MM-dd"),
+                        )
+                      }
                       locale={id}
                     />
                   </PopoverContent>
@@ -747,9 +793,14 @@ export default function InventoryRecordsClient() {
                   value={form.watch("type")}
                   onValueChange={(v) => {
                     v && form.setValue("type", v as "MASUK" | "KELUAR");
-                    const statusOptions = statusOptionsByType[v as "MASUK" | "KELUAR"];
+                    const statusOptions =
+                      statusOptionsByType[v as "MASUK" | "KELUAR"];
                     if (statusOptions.length > 0) {
-                      form.setValue("status", statusOptions[0].value as CreateInventoryFormData["status"]);
+                      form.setValue(
+                        "status",
+                        statusOptions[0]
+                          .value as CreateInventoryFormData["status"],
+                      );
                     }
                   }}
                 >
@@ -772,7 +823,13 @@ export default function InventoryRecordsClient() {
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={form.watch("status")}
-                  onValueChange={(v) => v && form.setValue("status", v as CreateInventoryFormData["status"])}
+                  onValueChange={(v) =>
+                    v &&
+                    form.setValue(
+                      "status",
+                      v as CreateInventoryFormData["status"],
+                    )
+                  }
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Pilih status" />
@@ -805,10 +862,7 @@ export default function InventoryRecordsClient() {
                   </Button>
                 }
               />
-              <Button
-                type="submit"
-                disabled={saveMutation.isPending}
-              >
+              <Button type="submit" disabled={saveMutation.isPending}>
                 {saveMutation.isPending ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
