@@ -53,6 +53,11 @@ export type Item = Prisma.ItemModel
  */
 export type ItemStock = Prisma.ItemStockModel
 /**
+ * Model Inventory
+ * 
+ */
+export type Inventory = Prisma.InventoryModel
+/**
  * Model Verification
  * 
  */

@@ -58,6 +58,7 @@ export const ModelName = {
   Category: 'Category',
   Item: 'Item',
   ItemStock: 'ItemStock',
+  Inventory: 'Inventory',
   Verification: 'Verification'
 } as const
 
@@ -179,6 +180,21 @@ export const ItemStockScalarFieldEnum = {
 export type ItemStockScalarFieldEnum = (typeof ItemStockScalarFieldEnum)[keyof typeof ItemStockScalarFieldEnum]
 
 
+export const InventoryScalarFieldEnum = {
+  id: 'id',
+  itemId: 'itemId',
+  transactionDate: 'transactionDate',
+  quantity: 'quantity',
+  type: 'type',
+  status: 'status',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InventoryScalarFieldEnum = (typeof InventoryScalarFieldEnum)[keyof typeof InventoryScalarFieldEnum]
+
+
 export const VerificationScalarFieldEnum = {
   id: 'id',
   identifier: 'identifier',
@@ -286,6 +302,15 @@ export const ItemStockOrderByRelevanceFieldEnum = {
 } as const
 
 export type ItemStockOrderByRelevanceFieldEnum = (typeof ItemStockOrderByRelevanceFieldEnum)[keyof typeof ItemStockOrderByRelevanceFieldEnum]
+
+
+export const InventoryOrderByRelevanceFieldEnum = {
+  id: 'id',
+  itemId: 'itemId',
+  createdById: 'createdById'
+} as const
+
+export type InventoryOrderByRelevanceFieldEnum = (typeof InventoryOrderByRelevanceFieldEnum)[keyof typeof InventoryOrderByRelevanceFieldEnum]
 
 
 export const VerificationOrderByRelevanceFieldEnum = {

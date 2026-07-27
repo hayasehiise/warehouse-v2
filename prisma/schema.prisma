@@ -23,6 +23,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   profile       Profile?
+  createdInventories Inventory[]
 
   username        String?
   displayUsername String? @db.Text
@@ -109,6 +110,7 @@ model Item {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   stocks      ItemStock[]
+  inventories Inventory[]
 
   @@index([name])
   @@index([categoryId])
@@ -126,6 +128,38 @@ model ItemStock {
 
   @@index([itemId])
   @@map("item_stock")
+}
+
+enum InventoryType {
+  MASUK
+  KELUAR
+}
+
+enum InventoryStatus {
+  BAIK
+  RUSAK
+  HILANG
+  KADALUARSA
+}
+
+model Inventory {
+  id              String           @id @default(ulid())
+  itemId          String
+  item            Item             @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  transactionDate DateTime
+  quantity        Float
+  type            InventoryType
+  status          InventoryStatus
+  createdById     String
+  createdBy       User             @relation(fields: [createdById], references: [id])
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([itemId])
+  @@index([transactionDate])
+  @@index([type])
+  @@index([status])
+  @@map("inventory")
 }
 
 model Verification {

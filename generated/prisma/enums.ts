@@ -9,7 +9,19 @@
 * 🟢 You can import this file directly.
 */
 
+export const InventoryType = {
+  MASUK: 'MASUK',
+  KELUAR: 'KELUAR'
+} as const
+
+export type InventoryType = (typeof InventoryType)[keyof typeof InventoryType]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const InventoryStatus = {
+  BAIK: 'BAIK',
+  RUSAK: 'RUSAK',
+  HILANG: 'HILANG',
+  KADALUARSA: 'KADALUARSA'
+} as const
+
+export type InventoryStatus = (typeof InventoryStatus)[keyof typeof InventoryStatus]
