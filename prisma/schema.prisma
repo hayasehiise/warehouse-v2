@@ -156,7 +156,6 @@ model Inventory {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
-  @@index([itemId])
   @@index([transactionDate])
   @@index([type])
   @@index([status])
@@ -201,8 +200,6 @@ model DistributionItem {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt @map("updated_at")
 
-  @@index([distributionId])
-  @@index([itemId])
   @@map("distribution_item")
 }
 

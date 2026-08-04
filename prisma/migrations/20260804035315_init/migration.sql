@@ -119,7 +119,6 @@ CREATE TABLE `inventory` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    INDEX `inventory_itemId_idx`(`itemId`),
     INDEX `inventory_transactionDate_idx`(`transactionDate`),
     INDEX `inventory_type_idx`(`type`),
     INDEX `inventory_status_idx`(`status`),
@@ -156,8 +155,6 @@ CREATE TABLE `distribution_item` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
-    INDEX `distribution_item_distributionId_idx`(`distributionId`),
-    INDEX `distribution_item_itemId_idx`(`itemId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
