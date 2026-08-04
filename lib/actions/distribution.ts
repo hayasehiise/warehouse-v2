@@ -318,7 +318,7 @@ async function generateTransactionCode(tx: any) {
 
   let sequence = 1;
   if (lastDistribution) {
-    const lastSequence = parseInt(lastDistribution.transactionCode.split("-")[3], 10);
+    const lastSequence = parseInt(lastDistribution.transactionCode.split("-")[2], 10);
     sequence = lastSequence + 1;
   }
 
@@ -341,14 +341,15 @@ export async function createDistribution(data: CreateDistributionFormData) {
     for (const item of items) {
       const itemStock = await tx.itemStock.findFirst({
         where: { itemId: item.itemId },
+        include: { item: { select: { name: true } } },
       });
 
       if (!itemStock) {
-        throw new Error(`Stok untuk item ${item.itemId} tidak ditemukan`);
+        throw new Error(`Stok untuk item tidak ditemukan`);
       }
 
       if (itemStock.quantity < item.quantity) {
-        throw new Error(`Stok tidak mencukupi untuk item ${item.itemId}. Stok tersedia: ${itemStock.quantity}`);
+        throw new Error(`Stok tidak mencukupi untuk ${itemStock.item.name}. Stok tersedia: ${itemStock.quantity}, dibutuhkan: ${item.quantity}`);
       }
     }
 
@@ -380,13 +381,6 @@ export async function createDistribution(data: CreateDistributionFormData) {
         },
       },
     });
-
-    for (const item of items) {
-      await tx.itemStock.update({
-        where: { id: (await tx.itemStock.findFirst({ where: { itemId: item.itemId } }))!.id },
-        data: { quantity: { decrement: item.quantity } },
-      });
-    }
 
     return distribution;
   });
@@ -423,29 +417,18 @@ export async function updateDistribution(id: string, data: UpdateDistributionFor
   }
 
   const result = await prisma.$transaction(async (tx) => {
-    for (const existingItem of existingDistribution.items) {
-      const itemStock = await tx.itemStock.findFirst({
-        where: { itemId: existingItem.itemId },
-      });
-      if (itemStock) {
-        await tx.itemStock.update({
-          where: { id: itemStock.id },
-          data: { quantity: { increment: existingItem.quantity } },
-        });
-      }
-    }
-
     for (const item of items) {
       const itemStock = await tx.itemStock.findFirst({
         where: { itemId: item.itemId },
+        include: { item: { select: { name: true } } },
       });
 
       if (!itemStock) {
-        throw new Error(`Stok untuk item ${item.itemId} tidak ditemukan`);
+        throw new Error(`Stok untuk item tidak ditemukan`);
       }
 
       if (itemStock.quantity < item.quantity) {
-        throw new Error(`Stok tidak mencukupi untuk item ${item.itemId}. Stok tersedia: ${itemStock.quantity}`);
+        throw new Error(`Stok tidak mencukupi untuk ${itemStock.item.name}. Stok tersedia: ${itemStock.quantity}, dibutuhkan: ${item.quantity}`);
       }
     }
 
@@ -481,13 +464,6 @@ export async function updateDistribution(id: string, data: UpdateDistributionFor
       },
     });
 
-    for (const item of items) {
-      await tx.itemStock.update({
-        where: { id: (await tx.itemStock.findFirst({ where: { itemId: item.itemId } }))!.id },
-        data: { quantity: { decrement: item.quantity } },
-      });
-    }
-
     return distribution;
   });
 
@@ -517,6 +493,9 @@ export async function approveDistribution(id: string) {
 
   const distribution = await prisma.distribution.findUnique({
     where: { id },
+    include: {
+      items: { include: { item: { include: { stocks: true } } } },
+    },
   });
 
   if (!distribution) {
@@ -527,21 +506,52 @@ export async function approveDistribution(id: string) {
     throw new Error("Hanya distribution dengan status PENDING yang bisa diapprove");
   }
 
-  const result = await prisma.distribution.update({
-    where: { id },
-    data: {
-      approvedStatus: "APPROVED",
-      approvedById: session.user.id,
-      approvedAt: new Date(),
-    },
-    include: {
-      createdBy: { select: { id: true, name: true } },
-      approvedBy: { select: { id: true, name: true } },
-    },
+  // Validate stock again at approval time
+  for (const item of distribution.items) {
+    const itemStock = await prisma.itemStock.findFirst({
+      where: { itemId: item.itemId },
+      include: { item: { select: { name: true } } },
+    });
+
+    if (!itemStock) {
+      throw new Error(`Stok untuk item tidak ditemukan`);
+    }
+
+    if (itemStock.quantity < item.quantity) {
+      throw new Error(`Stok tidak mencukupi untuk ${itemStock.item.name}. Stok tersedia: ${itemStock.quantity}, dibutuhkan: ${item.quantity}`);
+    }
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    // Decrement stock for each item
+    for (const item of distribution.items) {
+      await tx.itemStock.update({
+        where: { id: (await tx.itemStock.findFirst({ where: { itemId: item.itemId } }))!.id },
+        data: { quantity: { decrement: item.quantity } },
+      });
+    }
+
+    // Update distribution status to APPROVED
+    const updatedDistribution = await tx.distribution.update({
+      where: { id },
+      data: {
+        approvedStatus: "APPROVED",
+        approvedById: session.user.id,
+        approvedAt: new Date(),
+      },
+      include: {
+        createdBy: { select: { id: true, name: true } },
+        approvedBy: { select: { id: true, name: true } },
+      },
+    });
+
+    return updatedDistribution;
   });
 
   revalidatePath("/distribution");
   revalidatePath(`/distribution/${id}`);
+  revalidatePath("/item");
+  revalidatePath("/inventory");
   return serialize(result);
 }
 
@@ -574,37 +584,18 @@ export async function rejectDistribution(id: string) {
     throw new Error("Hanya distribution dengan status PENDING yang bisa direject");
   }
 
-  const result = await prisma.$transaction(async (tx) => {
-    const items = await tx.distributionItem.findMany({
-      where: { distributionId: id },
-    });
-
-    for (const item of items) {
-      const itemStock = await tx.itemStock.findFirst({
-        where: { itemId: item.itemId },
-      });
-      if (itemStock) {
-        await tx.itemStock.update({
-          where: { id: itemStock.id },
-          data: { quantity: { increment: item.quantity } },
-        });
-      }
-    }
-
-    const distribution = await tx.distribution.update({
-      where: { id },
-      data: {
-        approvedStatus: "REJECTED",
-        approvedById: session.user.id,
-        approvedAt: new Date(),
-      },
-      include: {
-        createdBy: { select: { id: true, name: true } },
-        approvedBy: { select: { id: true, name: true } },
-      },
-    });
-
-    return distribution;
+  // No stock changes needed - stock was only reserved, not deducted on create
+  const result = await prisma.distribution.update({
+    where: { id },
+    data: {
+      approvedStatus: "REJECTED",
+      approvedById: session.user.id,
+      approvedAt: new Date(),
+    },
+    include: {
+      createdBy: { select: { id: true, name: true } },
+      approvedBy: { select: { id: true, name: true } },
+    },
   });
 
   revalidatePath("/distribution");
@@ -630,10 +621,8 @@ export async function softDeleteDistribution(id: string) {
     throw new Error("Distribution not found");
   }
 
-  if (distribution.approvedStatus === "APPROVED") {
-    throw new Error("Distribution yang sudah APPROVED tidak bisa dihapus");
-  }
-
+  // Allow delete for all statuses including APPROVED
+  // No stock restoration - stock was already deducted at approve
   const result = await prisma.distribution.update({
     where: { id },
     data: { deletedAt: new Date() },
@@ -673,12 +662,10 @@ export async function forceDeleteDistribution(id: string) {
     throw new Error("Distribution not found");
   }
 
-  if (distribution.approvedStatus === "APPROVED") {
-    throw new Error("Distribution yang sudah APPROVED tidak bisa dihapus permanen");
-  }
-
+  // Allow force delete for all statuses including APPROVED
   await prisma.$transaction(async (tx) => {
-    if (distribution.approvedStatus === "REJECTED") {
+    // If APPROVED, restore stock since it was deducted at approve
+    if (distribution.approvedStatus === "APPROVED") {
       for (const item of distribution.items) {
         const itemStock = await tx.itemStock.findFirst({
           where: { itemId: item.itemId },
@@ -691,6 +678,7 @@ export async function forceDeleteDistribution(id: string) {
         }
       }
     }
+    // PENDING and REJECTED never had stock deducted, no restoration needed
 
     await tx.distributionItem.deleteMany({
       where: { distributionId: id },

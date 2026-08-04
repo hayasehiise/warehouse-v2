@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   useReactTable,
   getCoreRowModel,
@@ -112,23 +113,30 @@ import {
 
 import { getCategoriesOptions } from "@/lib/actions/item";
 
-const formSchema = z.object({
-  transactionDate: z.string().min(1, "Tanggal transaksi harus diisi"),
-  recipientName: z.string().min(1, "Nama penerima harus diisi"),
-  note: z.string().optional(),
-  items: z.array(
-    z.object({
-      itemId: z.string().min(1, "Barang harus dipilih"),
-      quantity: z.number().positive("Quantity harus lebih dari 0"),
-    })
-  ).min(1, "Minimal 1 item harus ditambahkan"),
-}).refine((data) => {
-  const itemIds = data.items.map((item) => item.itemId);
-  return new Set(itemIds).size === itemIds.length;
-}, {
-  message: "Item tidak boleh sama",
-  path: ["items"],
-});
+const formSchema = z
+  .object({
+    transactionDate: z.string().min(1, "Tanggal transaksi harus diisi"),
+    recipientName: z.string().min(1, "Nama penerima harus diisi"),
+    note: z.string().optional(),
+    items: z
+      .array(
+        z.object({
+          itemId: z.string().min(1, "Barang harus dipilih"),
+          quantity: z.number().positive("Quantity harus lebih dari 0"),
+        }),
+      )
+      .min(1, "Minimal 1 item harus ditambahkan"),
+  })
+  .refine(
+    (data) => {
+      const itemIds = data.items.map((item) => item.itemId);
+      return new Set(itemIds).size === itemIds.length;
+    },
+    {
+      message: "Item tidak boleh sama",
+      path: ["items"],
+    },
+  );
 
 type FilterTab = "active" | "deleted";
 type FilterStatus = "all" | "PENDING" | "APPROVED" | "REJECTED";
@@ -163,14 +171,21 @@ export default function DistributionClient() {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingData, setEditingData] = useState<CreateDistributionFormData | null>(null);
+  const [editingData, setEditingData] =
+    useState<CreateDistributionFormData | null>(null);
 
-  const [deleteTarget, setDeleteTarget] = useState<DistributionRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<DistributionRow | null>(
+    null,
+  );
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  const [approveTarget, setApproveTarget] = useState<DistributionRow | null>(null);
+  const [approveTarget, setApproveTarget] = useState<DistributionRow | null>(
+    null,
+  );
   const [isApproveOpen, setIsApproveOpen] = useState(false);
-  const [rejectTarget, setRejectTarget] = useState<DistributionRow | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<DistributionRow | null>(
+    null,
+  );
   const [isRejectOpen, setIsRejectOpen] = useState(false);
 
   const queryParams = useMemo(
@@ -182,7 +197,12 @@ export default function DistributionClient() {
       filterStatus: filterStatus === "all" ? undefined : filterStatus,
       dateFrom: dateFrom ? format(dateFrom, "yyyy-MM-dd") : undefined,
       dateTo: dateTo ? format(dateTo, "yyyy-MM-dd") : undefined,
-      sortBy: (sorting[0]?.id === "createdAt" ? "createdAt" : "transactionDate") as "createdAt" | "transactionDate" | "approvedStatus",
+      sortBy: (sorting[0]?.id === "createdAt"
+        ? "createdAt"
+        : "transactionDate") as
+        | "createdAt"
+        | "transactionDate"
+        | "approvedStatus",
       sortOrder: (sorting[0]?.desc ? "desc" : "asc") as "asc" | "desc",
     }),
     [
@@ -212,7 +232,9 @@ export default function DistributionClient() {
   const { data: items = [] } = useQuery({
     queryKey: ["items", "for-distribution"],
     queryFn: () => getItemOptionsForDistribution(),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 30, // 30 seconds
+    refetchInterval: 1000 * 10, // 10 seconds
+    refetchOnWindowFocus: true,
   });
 
   const createMutation = useMutation({
@@ -225,11 +247,21 @@ export default function DistributionClient() {
       setIsDialogOpen(false);
       setEditingId(null);
       setEditingData(null);
+      toast.success("Pengambilan berhasil dibuat");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, values }: { id: string; values: CreateDistributionFormData }) => {
+    mutationFn: async ({
+      id,
+      values,
+    }: {
+      id: string;
+      values: CreateDistributionFormData;
+    }) => {
       return updateDistribution(id, values);
     },
     onSuccess: () => {
@@ -238,6 +270,10 @@ export default function DistributionClient() {
       setIsDialogOpen(false);
       setEditingId(null);
       setEditingData(null);
+      toast.success("Pengambilan berhasil diperbarui");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
@@ -254,6 +290,14 @@ export default function DistributionClient() {
       queryClient.invalidateQueries({ queryKey: ["items-for-inventory"] });
       setIsDeleteOpen(false);
       setDeleteTarget(null);
+      toast.success(
+        filter === "deleted"
+          ? "Pengambilan berhasil dihapus permanen"
+          : "Pengambilan berhasil dihapus",
+      );
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
@@ -261,6 +305,10 @@ export default function DistributionClient() {
     mutationFn: (id: string) => restoreDistribution(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["distributions"] });
+      toast.success("Pengambilan berhasil dipulihkan");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
@@ -274,6 +322,10 @@ export default function DistributionClient() {
       queryClient.invalidateQueries({ queryKey: ["items-for-inventory"] });
       setIsApproveOpen(false);
       setApproveTarget(null);
+      toast.success("Pengambilan berhasil disetujui");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
@@ -287,22 +339,33 @@ export default function DistributionClient() {
       queryClient.invalidateQueries({ queryKey: ["items-for-inventory"] });
       setIsRejectOpen(false);
       setRejectTarget(null);
+      toast.success("Pengambilan berhasil ditolak");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
   const openCreate = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["items", "for-distribution"] });
     setEditingId(null);
     setEditingData(null);
     setIsDialogOpen(true);
-  }, []);
+  }, [queryClient]);
 
   const openEdit = useCallback(
     async (distribution: DistributionRow) => {
+      queryClient.invalidateQueries({
+        queryKey: ["items", "for-distribution"],
+      });
       const fullDistribution = await getDistributionById(distribution.id);
       if (fullDistribution) {
         setEditingId(fullDistribution.id);
         setEditingData({
-          transactionDate: format(new Date(fullDistribution.transactionDate), "yyyy-MM-dd"),
+          transactionDate: format(
+            new Date(fullDistribution.transactionDate),
+            "yyyy-MM-dd",
+          ),
           recipientName: fullDistribution.recipientName,
           note: fullDistribution.note ?? "",
           items: fullDistribution.items.map((item) => ({
@@ -313,7 +376,7 @@ export default function DistributionClient() {
         setIsDialogOpen(true);
       }
     },
-    [],
+    [queryClient],
   );
 
   const handleSave = useCallback(
@@ -416,6 +479,7 @@ export default function DistributionClient() {
           const isDeleted = filter === "deleted";
           const isPending = distribution.approvedStatus === "PENDING";
           const isRejected = distribution.approvedStatus === "REJECTED";
+          const isApproved = distribution.approvedStatus === "APPROVED";
 
           if (isDeleted) {
             return (
@@ -429,7 +493,9 @@ export default function DistributionClient() {
                     }
                   />
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleRestore(distribution.id)}>
+                    <DropdownMenuItem
+                      onClick={() => handleRestore(distribution.id)}
+                    >
                       <RotateCcw className="size-4" />
                       Pulihkan
                     </DropdownMenuItem>
@@ -461,34 +527,60 @@ export default function DistributionClient() {
                   }
                 />
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => openEdit(distribution)} disabled={!isPending}>
+                  <DropdownMenuItem
+                    onClick={() => openEdit(distribution)}
+                    disabled={!isPending}
+                  >
                     <Edit className="size-4" />
                     Edit
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.location.href = `/distribution/${distribution.id}`}>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      (window.location.href = `/distribution/${distribution.id}`)
+                    }
+                  >
                     <Eye className="size-4" />
                     Detail
                   </DropdownMenuItem>
                   {isPending && (
                     <>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => {
-                        setApproveTarget(distribution);
-                        setIsApproveOpen(true);
-                      }}>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setApproveTarget(distribution);
+                          setIsApproveOpen(true);
+                        }}
+                      >
                         <CheckCircle2 className="size-4" />
                         Approve
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => {
-                        setRejectTarget(distribution);
-                        setIsRejectOpen(true);
-                      }}>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setRejectTarget(distribution);
+                          setIsRejectOpen(true);
+                        }}
+                      >
                         <XCircle className="size-4" />
                         Reject
                       </DropdownMenuItem>
                     </>
                   )}
                   {isRejected && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => {
+                          setDeleteTarget(distribution);
+                          setIsDeleteOpen(true);
+                        }}
+                      >
+                        <Trash2 className="size-4" />
+                        Hapus
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {isApproved && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -510,7 +602,17 @@ export default function DistributionClient() {
         },
       },
     ],
-    [filter, openEdit, handleRestore, setDeleteTarget, setIsDeleteOpen, setApproveTarget, setIsApproveOpen, setRejectTarget, setIsRejectOpen],
+    [
+      filter,
+      openEdit,
+      handleRestore,
+      setDeleteTarget,
+      setIsDeleteOpen,
+      setApproveTarget,
+      setIsApproveOpen,
+      setRejectTarget,
+      setIsRejectOpen,
+    ],
   );
 
   const table = useReactTable({
@@ -537,7 +639,11 @@ export default function DistributionClient() {
             Kelola data pengambilan barang
           </p>
         </div>
-        <Button type="button" onClick={openCreate} disabled={createMutation.isPending || updateMutation.isPending}>
+        <Button
+          type="button"
+          onClick={openCreate}
+          disabled={createMutation.isPending || updateMutation.isPending}
+        >
           <Plus className="size-4" />
           Tambah Pengambilan
         </Button>
@@ -547,7 +653,8 @@ export default function DistributionClient() {
         <CardHeader className="gap-4">
           <CardTitle>Filter & Pencarian</CardTitle>
           <CardDescription>
-            Filter pengambilan berdasarkan status approval, rentang tanggal, dan pencarian
+            Filter pengambilan berdasarkan status approval, rentang tanggal, dan
+            pencarian
           </CardDescription>
           <div className="flex flex-wrap items-center gap-4">
             <div className="relative flex-1 min-w-[250px]">
@@ -673,7 +780,11 @@ export default function DistributionClient() {
             </div>
           ) : rows.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
-              {search ? "Pengambilan tidak ditemukan" : filter === "deleted" ? "Tidak ada pengambilan yang terhapus" : "Belum ada pengambilan"}
+              {search
+                ? "Pengambilan tidak ditemukan"
+                : filter === "deleted"
+                  ? "Tidak ada pengambilan yang terhapus"
+                  : "Belum ada pengambilan"}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -831,14 +942,17 @@ export default function DistributionClient() {
             <AlertDialogDescription>
               Apakah Anda yakin ingin menyetujui pengambilan
               <span className="font-medium text-foreground">
-                {approveTarget?.transactionCode}
+                &nbsp;{approveTarget?.transactionCode}
               </span>
               ? Stok barang akan dikurangi secara permanen.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleApprove} disabled={approveMutation.isPending}>
+            <AlertDialogAction
+              onClick={handleApprove}
+              disabled={approveMutation.isPending}
+            >
               {approveMutation.isPending ? "Menyetujui..." : "Approve"}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -852,7 +966,7 @@ export default function DistributionClient() {
             <AlertDialogDescription>
               Apakah Anda yakin ingin menolak pengambilan
               <span className="font-medium text-foreground">
-                {rejectTarget?.transactionCode}
+                &nbsp;{rejectTarget?.transactionCode}
               </span>
               ? Stok barang yang sudah dikurangi akan dikembalikan.
             </AlertDialogDescription>
@@ -917,14 +1031,20 @@ function DistributionFormDialog({
     if (editingId && initialData) {
       form.reset({
         ...initialData,
-        items: initialData.items.length > 0 ? initialData.items : [{ itemId: "", quantity: 1 }],
+        items:
+          initialData.items.length > 0
+            ? initialData.items
+            : [{ itemId: "", quantity: 1 }],
       });
     }
   }, [editingId, initialData, form]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent showCloseButton={false} className="sm:max-w-3xl max-h-[90vh]">
+      <DialogContent
+        showCloseButton={false}
+        className="sm:max-w-3xl max-h-[90vh]"
+      >
         <DialogHeader>
           <DialogTitle>
             {editingId ? "Edit Pengambilan" : "Tambah Pengambilan"}
@@ -954,10 +1074,17 @@ function DistributionFormDialog({
                 <PopoverContent className="w-auto p-0" align="start">
                   <CalendarUI
                     mode="single"
-                    selected={form.watch("transactionDate") ? new Date(form.watch("transactionDate")!) : new Date()}
+                    selected={
+                      form.watch("transactionDate")
+                        ? new Date(form.watch("transactionDate")!)
+                        : new Date()
+                    }
                     onSelect={(date) =>
                       date &&
-                      form.setValue("transactionDate", format(date, "yyyy-MM-dd"))
+                      form.setValue(
+                        "transactionDate",
+                        format(date, "yyyy-MM-dd"),
+                      )
                     }
                     locale={id}
                   />
@@ -1003,7 +1130,10 @@ function DistributionFormDialog({
                   size="sm"
                   onClick={() => {
                     const items = form.getValues("items");
-                    form.setValue("items", [...items, { itemId: "", quantity: 1 }]);
+                    form.setValue("items", [
+                      ...items,
+                      { itemId: "", quantity: 1 },
+                    ]);
                   }}
                 >
                   <Plus className="size-4" />
@@ -1019,10 +1149,18 @@ function DistributionFormDialog({
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50">
-                      <TableHead className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Barang</TableHead>
-                      <TableHead className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground w-24">Unit</TableHead>
-                      <TableHead className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground w-32">Quantity</TableHead>
-                      <TableHead className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground w-12">Aksi</TableHead>
+                      <TableHead className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Barang
+                      </TableHead>
+                      <TableHead className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground w-24">
+                        Unit
+                      </TableHead>
+                      <TableHead className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground w-32">
+                        Quantity
+                      </TableHead>
+                      <TableHead className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground w-12">
+                        Aksi
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1084,7 +1222,10 @@ function DistributionItemRow({
     setValue("items", newItems);
   };
 
-  const duplicateError = watch("items").filter((item, i) => i !== index && item.itemId === currentItem.itemId).length > 0;
+  const duplicateError =
+    watch("items").filter(
+      (item, i) => i !== index && item.itemId === currentItem.itemId,
+    ).length > 0;
   const selectedItem = itemOptions.find((i) => i.id === currentItem.itemId);
 
   return (
@@ -1094,16 +1235,23 @@ function DistributionItemRow({
           value={currentItem.itemId}
           onValueChange={(v) => v && handleItemChange(v)}
         >
-          <SelectTrigger className="w-full min-w-[280px]" aria-invalid={!!currentItem.itemId && duplicateError}>
+          <SelectTrigger
+            className="w-full min-w-[280px]"
+            aria-invalid={!!currentItem.itemId && duplicateError}
+          >
             <SelectValue placeholder="Pilih barang">
-              {selectedItem ? `${selectedItem.name} (${selectedItem.unit})` : undefined}
+              {selectedItem
+                ? `${selectedItem.name} (${selectedItem.unit})`
+                : undefined}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {itemOptions.map((item) => (
               <SelectItem key={item.id} value={item.id}>
                 <div className="flex items-center justify-between w-full min-w-[300px]">
-                  <span>{item.name} ({item.unit})</span>
+                  <span>
+                    {item.name} ({item.unit})
+                  </span>
                   <Badge variant="secondary" className="ml-2 shrink-0">
                     Stok: {item.totalStock}
                   </Badge>
@@ -1112,7 +1260,7 @@ function DistributionItemRow({
             ))}
           </SelectContent>
         </Select>
-        {(currentItem.itemId && duplicateError) && (
+        {currentItem.itemId && duplicateError && (
           <p className="text-xs text-destructive mt-1">Item tidak boleh sama</p>
         )}
         {form.formState.errors.items && (

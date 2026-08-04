@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { z } from "zod";
@@ -107,23 +108,30 @@ const statusColors: Record<"PENDING" | "APPROVED" | "REJECTED", string> = {
   REJECTED: "bg-red-100 text-red-800",
 };
 
-const formSchema = z.object({
-  transactionDate: z.string().min(1, "Tanggal transaksi harus diisi"),
-  recipientName: z.string().min(1, "Nama penerima harus diisi"),
-  note: z.string().optional(),
-  items: z.array(
-    z.object({
-      itemId: z.string().min(1, "Barang harus dipilih"),
-      quantity: z.number().positive("Quantity harus lebih dari 0"),
-    })
-  ).min(1, "Minimal 1 item harus ditambahkan"),
-}).refine((data) => {
-  const itemIds = data.items.map((item) => item.itemId);
-  return new Set(itemIds).size === itemIds.length;
-}, {
-  message: "Item tidak boleh sama",
-  path: ["items"],
-});
+const formSchema = z
+  .object({
+    transactionDate: z.string().min(1, "Tanggal transaksi harus diisi"),
+    recipientName: z.string().min(1, "Nama penerima harus diisi"),
+    note: z.string().optional(),
+    items: z
+      .array(
+        z.object({
+          itemId: z.string().min(1, "Barang harus dipilih"),
+          quantity: z.number().positive("Quantity harus lebih dari 0"),
+        }),
+      )
+      .min(1, "Minimal 1 item harus ditambahkan"),
+  })
+  .refine(
+    (data) => {
+      const itemIds = data.items.map((item) => item.itemId);
+      return new Set(itemIds).size === itemIds.length;
+    },
+    {
+      message: "Item tidak boleh sama",
+      path: ["items"],
+    },
+  );
 
 type CreateDistributionFormData = z.infer<typeof formSchema>;
 
@@ -133,18 +141,22 @@ export default function DistributionDetailClient() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const [deleteTarget, setDeleteTarget] = useState<DistributionDetailRow | null>(null);
+  const [deleteTarget, setDeleteTarget] =
+    useState<DistributionDetailRow | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isForceDelete, setIsForceDelete] = useState(false);
 
-  const [approveTarget, setApproveTarget] = useState<DistributionDetailRow | null>(null);
+  const [approveTarget, setApproveTarget] =
+    useState<DistributionDetailRow | null>(null);
   const [isApproveOpen, setIsApproveOpen] = useState(false);
 
-  const [rejectTarget, setRejectTarget] = useState<DistributionDetailRow | null>(null);
+  const [rejectTarget, setRejectTarget] =
+    useState<DistributionDetailRow | null>(null);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingDistribution, setEditingDistribution] = useState<DistributionDetailRow | null>(null);
+  const [editingDistribution, setEditingDistribution] =
+    useState<DistributionDetailRow | null>(null);
 
   const { data: distribution, isLoading } = useQuery({
     queryKey: ["distribution", "detail", id],
@@ -159,11 +171,17 @@ export default function DistributionDetailClient() {
       return approveDistribution(approveTarget.id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["distribution", "detail", id] });
+      queryClient.invalidateQueries({
+        queryKey: ["distribution", "detail", id],
+      });
       queryClient.invalidateQueries({ queryKey: ["distributions"] });
       queryClient.invalidateQueries({ queryKey: ["items-for-inventory"] });
       setIsApproveOpen(false);
       setApproveTarget(null);
+      toast.success("Pengambilan berhasil disetujui");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
@@ -173,31 +191,51 @@ export default function DistributionDetailClient() {
       return rejectDistribution(rejectTarget.id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["distribution", "detail", id] });
+      queryClient.invalidateQueries({
+        queryKey: ["distribution", "detail", id],
+      });
       queryClient.invalidateQueries({ queryKey: ["distributions"] });
       queryClient.invalidateQueries({ queryKey: ["items-for-inventory"] });
       setIsRejectOpen(false);
       setRejectTarget(null);
+      toast.success("Pengambilan berhasil ditolak");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, values }: { id: string; values: CreateDistributionFormData }) => {
+    mutationFn: async ({
+      id,
+      values,
+    }: {
+      id: string;
+      values: CreateDistributionFormData;
+    }) => {
       return updateDistribution(id, values);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["distribution", "detail", id] });
+      queryClient.invalidateQueries({
+        queryKey: ["distribution", "detail", id],
+      });
       queryClient.invalidateQueries({ queryKey: ["distributions"] });
       queryClient.invalidateQueries({ queryKey: ["items-for-inventory"] });
       setIsEditDialogOpen(false);
       setEditingDistribution(null);
+      toast.success("Pengambilan berhasil diperbarui");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
   const { data: itemOptions = [] } = useQuery({
     queryKey: ["items", "for-distribution"],
     queryFn: () => getItemOptionsForDistribution(),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 30,
+    refetchInterval: 1000 * 10,
+    refetchOnWindowFocus: true,
   });
 
   const deleteMutation = useMutation({
@@ -215,6 +253,14 @@ export default function DistributionDetailClient() {
       setDeleteTarget(null);
       setIsForceDelete(false);
       router.push("/distribution");
+      toast.success(
+        isForceDelete
+          ? "Pengambilan berhasil dihapus permanen"
+          : "Pengambilan berhasil dihapus",
+      );
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
@@ -222,8 +268,14 @@ export default function DistributionDetailClient() {
     mutationFn: (id: string) => restoreDistribution(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["distributions"] });
-      queryClient.invalidateQueries({ queryKey: ["distribution", "detail", id] });
+      queryClient.invalidateQueries({
+        queryKey: ["distribution", "detail", id],
+      });
       router.push("/distribution");
+      toast.success("Pengambilan berhasil dipulihkan");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
@@ -245,6 +297,7 @@ export default function DistributionDetailClient() {
 
   const handleEdit = useCallback(async () => {
     if (!distribution) return;
+    queryClient.invalidateQueries({ queryKey: ["items", "for-distribution"] });
     const freshData = await getDistributionById(distribution.id);
     if (freshData) {
       setEditingDistribution(freshData);
@@ -297,8 +350,12 @@ export default function DistributionDetailClient() {
               <ArrowLeft className="size-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">Detail Pengambilan</h1>
-              <p className="text-sm text-muted-foreground">Data tidak ditemukan</p>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                Detail Pengambilan
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Data tidak ditemukan
+              </p>
             </div>
           </div>
         </div>
@@ -313,6 +370,7 @@ export default function DistributionDetailClient() {
 
   const isDeleted = distribution.deletedAt !== null;
   const isPending = distribution.approvedStatus === "PENDING";
+  const isApproved = distribution.approvedStatus === "APPROVED";
   const isRejected = distribution.approvedStatus === "REJECTED";
 
   return (
@@ -342,7 +400,7 @@ export default function DistributionDetailClient() {
               Pulihkan
             </Button>
           )}
-          {!isDeleted && distribution.approvedStatus !== "APPROVED" && (
+          {!isDeleted && (
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
@@ -360,17 +418,21 @@ export default function DistributionDetailClient() {
                       Edit
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => {
-                      setApproveTarget(distribution);
-                      setIsApproveOpen(true);
-                    }}>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setApproveTarget(distribution);
+                        setIsApproveOpen(true);
+                      }}
+                    >
                       <CheckCircle2 className="size-4" />
                       Approve
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => {
-                      setRejectTarget(distribution);
-                      setIsRejectOpen(true);
-                    }}>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setRejectTarget(distribution);
+                        setIsRejectOpen(true);
+                      }}
+                    >
                       <XCircle className="size-4" />
                       Reject
                     </DropdownMenuItem>
@@ -414,6 +476,32 @@ export default function DistributionDetailClient() {
                     </DropdownMenuItem>
                   </>
                 )}
+                {isApproved && (
+                  <>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => {
+                        setDeleteTarget(distribution);
+                        setIsDeleteOpen(true);
+                        setIsForceDelete(false);
+                      }}
+                    >
+                      <Trash2 className="size-4" />
+                      Hapus
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => {
+                        setDeleteTarget(distribution);
+                        setIsDeleteOpen(true);
+                        setIsForceDelete(true);
+                      }}
+                    >
+                      <XCircle className="size-4" />
+                      Hapus Permanen
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -432,32 +520,50 @@ export default function DistributionDetailClient() {
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1">
-                  <Label className="text-sm text-muted-foreground">Kode Transaksi</Label>
-                  <p className="font-mono text-lg font-medium">{distribution.transactionCode}</p>
+                  <Label className="text-sm text-muted-foreground">
+                    Kode Transaksi
+                  </Label>
+                  <p className="font-mono text-lg font-medium">
+                    {distribution.transactionCode}
+                  </p>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-sm text-muted-foreground">Tanggal Transaksi</Label>
+                  <Label className="text-sm text-muted-foreground">
+                    Tanggal Transaksi
+                  </Label>
                   <div className="flex items-center gap-2">
                     <Calendar className="size-4 text-muted-foreground" />
-                    <p>{format(new Date(distribution.transactionDate), "dd MMMM yyyy", { locale: localeId })}</p>
+                    <p>
+                      {format(
+                        new Date(distribution.transactionDate),
+                        "dd MMMM yyyy",
+                        { locale: localeId },
+                      )}
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-sm text-muted-foreground">Penerima</Label>
+                  <Label className="text-sm text-muted-foreground">
+                    Penerima
+                  </Label>
                   <div className="flex items-center gap-2">
                     <User className="size-4 text-muted-foreground" />
                     <p className="font-medium">{distribution.recipientName}</p>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-sm text-muted-foreground">Status Approval</Label>
+                  <Label className="text-sm text-muted-foreground">
+                    Status Approval
+                  </Label>
                   <Badge className={statusColors[distribution.approvedStatus]}>
                     {statusLabels[distribution.approvedStatus]}
                   </Badge>
                 </div>
                 {distribution.note && (
                   <div className="space-y-1 md:col-span-2">
-                    <Label className="text-sm text-muted-foreground">Catatan</Label>
+                    <Label className="text-sm text-muted-foreground">
+                      Catatan
+                    </Label>
                     <div className="flex items-start gap-2">
                       <FileText className="size-4 text-muted-foreground mt-0.5" />
                       <p className="whitespace-pre-wrap">{distribution.note}</p>
@@ -465,22 +571,34 @@ export default function DistributionDetailClient() {
                   </div>
                 )}
                 <div className="space-y-1">
-                  <Label className="text-sm text-muted-foreground">Dibuat Oleh</Label>
+                  <Label className="text-sm text-muted-foreground">
+                    Dibuat Oleh
+                  </Label>
                   <div className="flex items-center gap-2">
                     <User className="size-4 text-muted-foreground" />
                     <p>{distribution.createdByName}</p>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-sm text-muted-foreground">Dibuat Pada</Label>
+                  <Label className="text-sm text-muted-foreground">
+                    Dibuat Pada
+                  </Label>
                   <div className="flex items-center gap-2">
                     <Clock className="size-4 text-muted-foreground" />
-                    <p>{format(new Date(distribution.createdAt), "dd MMMM yyyy HH:mm", { locale: localeId })}</p>
+                    <p>
+                      {format(
+                        new Date(distribution.createdAt),
+                        "dd MMMM yyyy HH:mm",
+                        { locale: localeId },
+                      )}
+                    </p>
                   </div>
                 </div>
                 {distribution.approvedByName && (
                   <div className="space-y-1">
-                    <Label className="text-sm text-muted-foreground">Diapprove Oleh</Label>
+                    <Label className="text-sm text-muted-foreground">
+                      Diapprove Oleh
+                    </Label>
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="size-4 text-muted-foreground" />
                       <p>{distribution.approvedByName}</p>
@@ -489,10 +607,18 @@ export default function DistributionDetailClient() {
                 )}
                 {distribution.approvedAt && (
                   <div className="space-y-1">
-                    <Label className="text-sm text-muted-foreground">Diapprove Pada</Label>
+                    <Label className="text-sm text-muted-foreground">
+                      Diapprove Pada
+                    </Label>
                     <div className="flex items-center gap-2">
                       <Clock className="size-4 text-muted-foreground" />
-                      <p>{format(new Date(distribution.approvedAt), "dd MMMM yyyy HH:mm", { locale: localeId })}</p>
+                      <p>
+                        {format(
+                          new Date(distribution.approvedAt),
+                          "dd MMMM yyyy HH:mm",
+                          { locale: localeId },
+                        )}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -533,7 +659,10 @@ export default function DistributionDetailClient() {
                     </thead>
                     <tbody>
                       {distribution.items.map((item) => (
-                        <tr key={item.id} className="border-b border-border last:border-0">
+                        <tr
+                          key={item.id}
+                          className="border-b border-border last:border-0"
+                        >
                           <td className="px-4 py-3">
                             <p className="font-medium">{item.itemName}</p>
                           </td>
@@ -551,12 +680,17 @@ export default function DistributionDetailClient() {
                     </tbody>
                     <tfoot>
                       <tr className="border-t border-border bg-muted/50">
-                        <td className="px-4 py-3 font-medium" colSpan={2}>Total Item</td>
+                        <td className="px-4 py-3 font-medium" colSpan={2}>
+                          Total Item
+                        </td>
                         <td className="px-4 py-3 text-right font-medium tabular-nums">
                           {distribution.items.length}
                         </td>
                         <td className="px-4 py-3 text-right font-medium tabular-nums">
-                          {distribution.items.reduce((sum, item) => sum + item.quantity, 0)}
+                          {distribution.items.reduce(
+                            (sum, item) => sum + item.quantity,
+                            0,
+                          )}
                         </td>
                       </tr>
                     </tfoot>
@@ -574,13 +708,22 @@ export default function DistributionDetailClient() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1">
-                <Label className="text-sm text-muted-foreground">Total Item Unik</Label>
-                <p className="text-2xl font-bold">{distribution.items.length}</p>
+                <Label className="text-sm text-muted-foreground">
+                  Total Item Unik
+                </Label>
+                <p className="text-2xl font-bold">
+                  {distribution.items.length}
+                </p>
               </div>
               <div className="space-y-1">
-                <Label className="text-sm text-muted-foreground">Total Quantity</Label>
+                <Label className="text-sm text-muted-foreground">
+                  Total Quantity
+                </Label>
                 <p className="text-2xl font-bold tabular-nums">
-                  {distribution.items.reduce((sum, item) => sum + item.quantity, 0)}
+                  {distribution.items.reduce(
+                    (sum, item) => sum + item.quantity,
+                    0,
+                  )}
                 </p>
               </div>
               <div className="pt-4 border-t">
@@ -635,7 +778,9 @@ export default function DistributionDetailClient() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {isForceDelete ? "Hapus Permanen Pengambilan" : "Hapus Pengambilan"}
+              {isForceDelete
+                ? "Hapus Permanen Pengambilan"
+                : "Hapus Pengambilan"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {isForceDelete ? (
@@ -647,7 +792,8 @@ export default function DistributionDetailClient() {
                   ? Tindakan ini tidak dapat dibatalkan.
                   {deleteTarget?.approvedStatus === "REJECTED" && (
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Stok barang yang sudah dikembalikan saat reject tidak akan terpengaruh.
+                      Stok barang yang sudah dikembalikan saat reject tidak akan
+                      terpengaruh.
                     </p>
                   )}
                 </>
@@ -687,14 +833,17 @@ export default function DistributionDetailClient() {
             <AlertDialogDescription>
               Apakah Anda yakin ingin menyetujui pengambilan
               <span className="font-medium text-foreground">
-                {approveTarget?.transactionCode}
+                &nbsp;{approveTarget?.transactionCode}
               </span>
               ? Stok barang akan dikurangi secara permanen.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleApprove} disabled={approveMutation.isPending}>
+            <AlertDialogAction
+              onClick={handleApprove}
+              disabled={approveMutation.isPending}
+            >
               {approveMutation.isPending ? "Menyetujui..." : "Approve"}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -708,7 +857,7 @@ export default function DistributionDetailClient() {
             <AlertDialogDescription>
               Apakah Anda yakin ingin menolak pengambilan
               <span className="font-medium text-foreground">
-                {rejectTarget?.transactionCode}
+                &nbsp;{rejectTarget?.transactionCode}
               </span>
               ? Stok barang yang sudah dikurangi akan dikembalikan.
             </AlertDialogDescription>
@@ -737,7 +886,7 @@ export default function DistributionDetailClient() {
     </div>
   );
 }
- 
+
 interface DistributionEditDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -746,7 +895,7 @@ interface DistributionEditDialogProps {
   isPending: boolean;
   items: ItemOptionWithStock[];
 }
- 
+
 function DistributionEditDialog({
   isOpen,
   onClose,
@@ -764,7 +913,7 @@ function DistributionEditDialog({
       items: [{ itemId: "", quantity: 1 }],
     },
   });
- 
+
   useEffect(() => {
     if (!isOpen) {
       form.reset({
@@ -775,11 +924,14 @@ function DistributionEditDialog({
       });
     }
   }, [isOpen, form]);
- 
+
   useEffect(() => {
     if (editingDistribution) {
       form.reset({
-        transactionDate: format(new Date(editingDistribution.transactionDate), "yyyy-MM-dd"),
+        transactionDate: format(
+          new Date(editingDistribution.transactionDate),
+          "yyyy-MM-dd",
+        ),
         recipientName: editingDistribution.recipientName,
         note: editingDistribution.note ?? "",
         items: editingDistribution.items.map((item) => ({
@@ -789,10 +941,13 @@ function DistributionEditDialog({
       });
     }
   }, [editingDistribution, form]);
- 
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent showCloseButton={false} className="sm:max-w-3xl max-h-[90vh]">
+      <DialogContent
+        showCloseButton={false}
+        className="sm:max-w-3xl max-h-[90vh]"
+      >
         <DialogHeader>
           <DialogTitle>Edit Pengambilan</DialogTitle>
           <DialogDescription>Ubah detail pengambilan</DialogDescription>
@@ -802,20 +957,31 @@ function DistributionEditDialog({
             <div className="space-y-2">
               <Label htmlFor="transactionDate">Tanggal Transaksi</Label>
               <Popover>
-                <PopoverTrigger nativeButton={false} render={
-                  <Input
-                    id="transactionDate"
-                    readOnly
-                    {...form.register("transactionDate")}
-                    placeholder="Pilih tanggal"
-                  />
-                } />
+                <PopoverTrigger
+                  nativeButton={false}
+                  render={
+                    <Input
+                      id="transactionDate"
+                      readOnly
+                      {...form.register("transactionDate")}
+                      placeholder="Pilih tanggal"
+                    />
+                  }
+                />
                 <PopoverContent className="w-auto p-0" align="start">
                   <CalendarUI
                     mode="single"
-                    selected={form.watch("transactionDate") ? new Date(form.watch("transactionDate")!) : new Date()}
+                    selected={
+                      form.watch("transactionDate")
+                        ? new Date(form.watch("transactionDate")!)
+                        : new Date()
+                    }
                     onSelect={(date) =>
-                      date && form.setValue("transactionDate", format(date, "yyyy-MM-dd"))
+                      date &&
+                      form.setValue(
+                        "transactionDate",
+                        format(date, "yyyy-MM-dd"),
+                      )
                     }
                     locale={localeId}
                   />
@@ -827,7 +993,7 @@ function DistributionEditDialog({
                 </p>
               )}
             </div>
- 
+
             <div className="space-y-2">
               <Label htmlFor="recipientName">Nama Penerima</Label>
               <Input
@@ -842,7 +1008,7 @@ function DistributionEditDialog({
                 </p>
               )}
             </div>
- 
+
             <div className="space-y-2">
               <Label htmlFor="note">Catatan</Label>
               <Input
@@ -851,7 +1017,7 @@ function DistributionEditDialog({
                 placeholder="Catatan (opsional)"
               />
             </div>
- 
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Daftar Item</Label>
@@ -861,7 +1027,10 @@ function DistributionEditDialog({
                   size="sm"
                   onClick={() => {
                     const items = form.getValues("items");
-                    form.setValue("items", [...items, { itemId: "", quantity: 1 }]);
+                    form.setValue("items", [
+                      ...items,
+                      { itemId: "", quantity: 1 },
+                    ]);
                   }}
                 >
                   <Plus className="size-4" />
@@ -877,10 +1046,18 @@ function DistributionEditDialog({
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50">
-                      <TableHead className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Barang</TableHead>
-                      <TableHead className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground w-24">Unit</TableHead>
-                      <TableHead className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground w-32">Quantity</TableHead>
-                      <TableHead className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground w-12">Aksi</TableHead>
+                      <TableHead className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Barang
+                      </TableHead>
+                      <TableHead className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground w-24">
+                        Unit
+                      </TableHead>
+                      <TableHead className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground w-32">
+                        Quantity
+                      </TableHead>
+                      <TableHead className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground w-12">
+                        Aksi
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -898,7 +1075,13 @@ function DistributionEditDialog({
             </div>
           </div>
           <DialogFooter className="mt-6">
-            <DialogClose render={<Button type="button" variant="outline">Batal</Button>} />
+            <DialogClose
+              render={
+                <Button type="button" variant="outline">
+                  Batal
+                </Button>
+              }
+            />
             <Button type="submit" disabled={isPending}>
               {isPending ? "Menyimpan..." : "Simpan"}
             </Button>
@@ -908,13 +1091,13 @@ function DistributionEditDialog({
     </Dialog>
   );
 }
- 
+
 interface DistributionEditItemRowProps {
   index: number;
   form: ReturnType<typeof useForm<CreateDistributionFormData>>;
   items: ItemOptionWithStock[];
 }
- 
+
 function DistributionEditItemRow({
   index,
   form,
@@ -923,21 +1106,24 @@ function DistributionEditItemRow({
   const { watch, setValue, register } = form;
   const items = watch("items");
   const currentItem = items[index];
- 
+
   const handleItemChange = (itemId: string) => {
     setValue(`items.${index}.itemId`, itemId);
     setValue(`items.${index}.quantity`, 1);
   };
- 
+
   const handleRemove = () => {
     if (items.length <= 1) return;
     const newItems = items.filter((_, i) => i !== index);
     setValue("items", newItems);
   };
- 
-  const duplicateError = watch("items").filter((item, i) => i !== index && item.itemId === currentItem.itemId).length > 0;
+
+  const duplicateError =
+    watch("items").filter(
+      (item, i) => i !== index && item.itemId === currentItem.itemId,
+    ).length > 0;
   const selectedItem = itemOptions.find((i) => i.id === currentItem.itemId);
- 
+
   return (
     <TableRow className="border-b border-border last:border-0 hover:bg-muted/50">
       <TableCell className="px-4 py-3">
@@ -945,16 +1131,23 @@ function DistributionEditItemRow({
           value={currentItem.itemId}
           onValueChange={(v) => v && handleItemChange(v)}
         >
-          <SelectTrigger className="w-full min-w-[280px]" aria-invalid={!!currentItem.itemId && duplicateError}>
+          <SelectTrigger
+            className="w-full min-w-[280px]"
+            aria-invalid={!!currentItem.itemId && duplicateError}
+          >
             <SelectValue placeholder="Pilih barang">
-              {selectedItem ? `${selectedItem.name} (${selectedItem.unit})` : undefined}
+              {selectedItem
+                ? `${selectedItem.name} (${selectedItem.unit})`
+                : undefined}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {itemOptions.map((item) => (
               <SelectItem key={item.id} value={item.id}>
                 <div className="flex items-center justify-between w-full min-w-[300px]">
-                  <span>{item.name} ({item.unit})</span>
+                  <span>
+                    {item.name} ({item.unit})
+                  </span>
                   <Badge variant="secondary" className="ml-2 shrink-0">
                     Stok: {item.totalStock}
                   </Badge>
@@ -963,7 +1156,7 @@ function DistributionEditItemRow({
             ))}
           </SelectContent>
         </Select>
-        {(currentItem.itemId && duplicateError) && (
+        {currentItem.itemId && duplicateError && (
           <p className="text-xs text-destructive mt-1">Item tidak boleh sama</p>
         )}
         {form.formState.errors.items && (

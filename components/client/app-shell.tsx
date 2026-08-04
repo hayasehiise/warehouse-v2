@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Sidebar from "@/components/client/sidebar";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -25,6 +26,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         <main className="flex-1 p-6">{children}</main>
       </div>
+      <Toaster position="top-right" />
     </div>
   );
 }
