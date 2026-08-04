@@ -58,6 +58,16 @@ export type ItemStock = Prisma.ItemStockModel
  */
 export type Inventory = Prisma.InventoryModel
 /**
+ * Model Distribution
+ * 
+ */
+export type Distribution = Prisma.DistributionModel
+/**
+ * Model DistributionItem
+ * 
+ */
+export type DistributionItem = Prisma.DistributionItemModel
+/**
  * Model Verification
  * 
  */

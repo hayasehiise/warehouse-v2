@@ -59,6 +59,8 @@ export const ModelName = {
   Item: 'Item',
   ItemStock: 'ItemStock',
   Inventory: 'Inventory',
+  Distribution: 'Distribution',
+  DistributionItem: 'DistributionItem',
   Verification: 'Verification'
 } as const
 
@@ -195,6 +197,36 @@ export const InventoryScalarFieldEnum = {
 export type InventoryScalarFieldEnum = (typeof InventoryScalarFieldEnum)[keyof typeof InventoryScalarFieldEnum]
 
 
+export const DistributionScalarFieldEnum = {
+  id: 'id',
+  transactionCode: 'transactionCode',
+  transactionDate: 'transactionDate',
+  recipientName: 'recipientName',
+  note: 'note',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  approvedStatus: 'approvedStatus',
+  approvedById: 'approvedById',
+  approvedAt: 'approvedAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type DistributionScalarFieldEnum = (typeof DistributionScalarFieldEnum)[keyof typeof DistributionScalarFieldEnum]
+
+
+export const DistributionItemScalarFieldEnum = {
+  id: 'id',
+  distributionId: 'distributionId',
+  itemId: 'itemId',
+  quantity: 'quantity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DistributionItemScalarFieldEnum = (typeof DistributionItemScalarFieldEnum)[keyof typeof DistributionItemScalarFieldEnum]
+
+
 export const VerificationScalarFieldEnum = {
   id: 'id',
   identifier: 'identifier',
@@ -311,6 +343,27 @@ export const InventoryOrderByRelevanceFieldEnum = {
 } as const
 
 export type InventoryOrderByRelevanceFieldEnum = (typeof InventoryOrderByRelevanceFieldEnum)[keyof typeof InventoryOrderByRelevanceFieldEnum]
+
+
+export const DistributionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  transactionCode: 'transactionCode',
+  recipientName: 'recipientName',
+  note: 'note',
+  createdById: 'createdById',
+  approvedById: 'approvedById'
+} as const
+
+export type DistributionOrderByRelevanceFieldEnum = (typeof DistributionOrderByRelevanceFieldEnum)[keyof typeof DistributionOrderByRelevanceFieldEnum]
+
+
+export const DistributionItemOrderByRelevanceFieldEnum = {
+  id: 'id',
+  distributionId: 'distributionId',
+  itemId: 'itemId'
+} as const
+
+export type DistributionItemOrderByRelevanceFieldEnum = (typeof DistributionItemOrderByRelevanceFieldEnum)[keyof typeof DistributionItemOrderByRelevanceFieldEnum]
 
 
 export const VerificationOrderByRelevanceFieldEnum = {

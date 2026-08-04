@@ -250,6 +250,8 @@ export type UserWhereInput = {
   accounts?: Prisma.AccountListRelationFilter
   profile?: Prisma.XOR<Prisma.ProfileNullableScalarRelationFilter, Prisma.ProfileWhereInput> | null
   createdInventories?: Prisma.InventoryListRelationFilter
+  createdDistributions?: Prisma.DistributionListRelationFilter
+  approvedDistributions?: Prisma.DistributionListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -270,6 +272,8 @@ export type UserOrderByWithRelationInput = {
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   profile?: Prisma.ProfileOrderByWithRelationInput
   createdInventories?: Prisma.InventoryOrderByRelationAggregateInput
+  createdDistributions?: Prisma.DistributionOrderByRelationAggregateInput
+  approvedDistributions?: Prisma.DistributionOrderByRelationAggregateInput
   _relevance?: Prisma.UserOrderByRelevanceInput
 }
 
@@ -294,6 +298,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   accounts?: Prisma.AccountListRelationFilter
   profile?: Prisma.XOR<Prisma.ProfileNullableScalarRelationFilter, Prisma.ProfileWhereInput> | null
   createdInventories?: Prisma.InventoryListRelationFilter
+  createdDistributions?: Prisma.DistributionListRelationFilter
+  approvedDistributions?: Prisma.DistributionListRelationFilter
 }, "id" | "email" | "username">
 
 export type UserOrderByWithAggregationInput = {
@@ -352,6 +358,8 @@ export type UserCreateInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
   createdInventories?: Prisma.InventoryCreateNestedManyWithoutCreatedByInput
+  createdDistributions?: Prisma.DistributionCreateNestedManyWithoutCreatedByInput
+  approvedDistributions?: Prisma.DistributionCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -372,6 +380,8 @@ export type UserUncheckedCreateInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
   createdInventories?: Prisma.InventoryUncheckedCreateNestedManyWithoutCreatedByInput
+  createdDistributions?: Prisma.DistributionUncheckedCreateNestedManyWithoutCreatedByInput
+  approvedDistributions?: Prisma.DistributionUncheckedCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserUpdateInput = {
@@ -392,6 +402,8 @@ export type UserUpdateInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
   createdInventories?: Prisma.InventoryUpdateManyWithoutCreatedByNestedInput
+  createdDistributions?: Prisma.DistributionUpdateManyWithoutCreatedByNestedInput
+  approvedDistributions?: Prisma.DistributionUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -412,6 +424,8 @@ export type UserUncheckedUpdateInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
   createdInventories?: Prisma.InventoryUncheckedUpdateManyWithoutCreatedByNestedInput
+  createdDistributions?: Prisma.DistributionUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvedDistributions?: Prisma.DistributionUncheckedUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -521,6 +535,11 @@ export type UserScalarRelationFilter = {
   isNot?: Prisma.UserWhereInput
 }
 
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
+}
+
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
@@ -601,6 +620,36 @@ export type UserUpdateOneRequiredWithoutCreatedInventoriesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCreatedInventoriesInput, Prisma.UserUpdateWithoutCreatedInventoriesInput>, Prisma.UserUncheckedUpdateWithoutCreatedInventoriesInput>
 }
 
+export type UserCreateNestedOneWithoutCreatedDistributionsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCreatedDistributionsInput, Prisma.UserUncheckedCreateWithoutCreatedDistributionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCreatedDistributionsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutApprovedDistributionsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutApprovedDistributionsInput, Prisma.UserUncheckedCreateWithoutApprovedDistributionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutApprovedDistributionsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutCreatedDistributionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCreatedDistributionsInput, Prisma.UserUncheckedCreateWithoutCreatedDistributionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCreatedDistributionsInput
+  upsert?: Prisma.UserUpsertWithoutCreatedDistributionsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCreatedDistributionsInput, Prisma.UserUpdateWithoutCreatedDistributionsInput>, Prisma.UserUncheckedUpdateWithoutCreatedDistributionsInput>
+}
+
+export type UserUpdateOneWithoutApprovedDistributionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutApprovedDistributionsInput, Prisma.UserUncheckedCreateWithoutApprovedDistributionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutApprovedDistributionsInput
+  upsert?: Prisma.UserUpsertWithoutApprovedDistributionsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutApprovedDistributionsInput, Prisma.UserUpdateWithoutApprovedDistributionsInput>, Prisma.UserUncheckedUpdateWithoutApprovedDistributionsInput>
+}
+
 export type UserCreateWithoutProfileInput = {
   id?: string
   name: string
@@ -618,6 +667,8 @@ export type UserCreateWithoutProfileInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   createdInventories?: Prisma.InventoryCreateNestedManyWithoutCreatedByInput
+  createdDistributions?: Prisma.DistributionCreateNestedManyWithoutCreatedByInput
+  approvedDistributions?: Prisma.DistributionCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserUncheckedCreateWithoutProfileInput = {
@@ -637,6 +688,8 @@ export type UserUncheckedCreateWithoutProfileInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   createdInventories?: Prisma.InventoryUncheckedCreateNestedManyWithoutCreatedByInput
+  createdDistributions?: Prisma.DistributionUncheckedCreateNestedManyWithoutCreatedByInput
+  approvedDistributions?: Prisma.DistributionUncheckedCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserCreateOrConnectWithoutProfileInput = {
@@ -672,6 +725,8 @@ export type UserUpdateWithoutProfileInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   createdInventories?: Prisma.InventoryUpdateManyWithoutCreatedByNestedInput
+  createdDistributions?: Prisma.DistributionUpdateManyWithoutCreatedByNestedInput
+  approvedDistributions?: Prisma.DistributionUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProfileInput = {
@@ -691,6 +746,8 @@ export type UserUncheckedUpdateWithoutProfileInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   createdInventories?: Prisma.InventoryUncheckedUpdateManyWithoutCreatedByNestedInput
+  createdDistributions?: Prisma.DistributionUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvedDistributions?: Prisma.DistributionUncheckedUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -710,6 +767,8 @@ export type UserCreateWithoutSessionsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
   createdInventories?: Prisma.InventoryCreateNestedManyWithoutCreatedByInput
+  createdDistributions?: Prisma.DistributionCreateNestedManyWithoutCreatedByInput
+  approvedDistributions?: Prisma.DistributionCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -729,6 +788,8 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
   createdInventories?: Prisma.InventoryUncheckedCreateNestedManyWithoutCreatedByInput
+  createdDistributions?: Prisma.DistributionUncheckedCreateNestedManyWithoutCreatedByInput
+  approvedDistributions?: Prisma.DistributionUncheckedCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -764,6 +825,8 @@ export type UserUpdateWithoutSessionsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
   createdInventories?: Prisma.InventoryUpdateManyWithoutCreatedByNestedInput
+  createdDistributions?: Prisma.DistributionUpdateManyWithoutCreatedByNestedInput
+  approvedDistributions?: Prisma.DistributionUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -783,6 +846,8 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
   createdInventories?: Prisma.InventoryUncheckedUpdateManyWithoutCreatedByNestedInput
+  createdDistributions?: Prisma.DistributionUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvedDistributions?: Prisma.DistributionUncheckedUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -802,6 +867,8 @@ export type UserCreateWithoutAccountsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
   createdInventories?: Prisma.InventoryCreateNestedManyWithoutCreatedByInput
+  createdDistributions?: Prisma.DistributionCreateNestedManyWithoutCreatedByInput
+  approvedDistributions?: Prisma.DistributionCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -821,6 +888,8 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
   createdInventories?: Prisma.InventoryUncheckedCreateNestedManyWithoutCreatedByInput
+  createdDistributions?: Prisma.DistributionUncheckedCreateNestedManyWithoutCreatedByInput
+  approvedDistributions?: Prisma.DistributionUncheckedCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -856,6 +925,8 @@ export type UserUpdateWithoutAccountsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
   createdInventories?: Prisma.InventoryUpdateManyWithoutCreatedByNestedInput
+  createdDistributions?: Prisma.DistributionUpdateManyWithoutCreatedByNestedInput
+  approvedDistributions?: Prisma.DistributionUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -875,6 +946,8 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
   createdInventories?: Prisma.InventoryUncheckedUpdateManyWithoutCreatedByNestedInput
+  createdDistributions?: Prisma.DistributionUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvedDistributions?: Prisma.DistributionUncheckedUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserCreateWithoutCreatedInventoriesInput = {
@@ -894,6 +967,8 @@ export type UserCreateWithoutCreatedInventoriesInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
+  createdDistributions?: Prisma.DistributionCreateNestedManyWithoutCreatedByInput
+  approvedDistributions?: Prisma.DistributionCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserUncheckedCreateWithoutCreatedInventoriesInput = {
@@ -913,6 +988,8 @@ export type UserUncheckedCreateWithoutCreatedInventoriesInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
+  createdDistributions?: Prisma.DistributionUncheckedCreateNestedManyWithoutCreatedByInput
+  approvedDistributions?: Prisma.DistributionUncheckedCreateNestedManyWithoutApprovedByInput
 }
 
 export type UserCreateOrConnectWithoutCreatedInventoriesInput = {
@@ -948,6 +1025,8 @@ export type UserUpdateWithoutCreatedInventoriesInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
+  createdDistributions?: Prisma.DistributionUpdateManyWithoutCreatedByNestedInput
+  approvedDistributions?: Prisma.DistributionUpdateManyWithoutApprovedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedInventoriesInput = {
@@ -967,6 +1046,208 @@ export type UserUncheckedUpdateWithoutCreatedInventoriesInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
+  createdDistributions?: Prisma.DistributionUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvedDistributions?: Prisma.DistributionUncheckedUpdateManyWithoutApprovedByNestedInput
+}
+
+export type UserCreateWithoutCreatedDistributionsInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  username?: string | null
+  displayUsername?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
+  createdInventories?: Prisma.InventoryCreateNestedManyWithoutCreatedByInput
+  approvedDistributions?: Prisma.DistributionCreateNestedManyWithoutApprovedByInput
+}
+
+export type UserUncheckedCreateWithoutCreatedDistributionsInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  username?: string | null
+  displayUsername?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
+  createdInventories?: Prisma.InventoryUncheckedCreateNestedManyWithoutCreatedByInput
+  approvedDistributions?: Prisma.DistributionUncheckedCreateNestedManyWithoutApprovedByInput
+}
+
+export type UserCreateOrConnectWithoutCreatedDistributionsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCreatedDistributionsInput, Prisma.UserUncheckedCreateWithoutCreatedDistributionsInput>
+}
+
+export type UserCreateWithoutApprovedDistributionsInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  username?: string | null
+  displayUsername?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
+  createdInventories?: Prisma.InventoryCreateNestedManyWithoutCreatedByInput
+  createdDistributions?: Prisma.DistributionCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserUncheckedCreateWithoutApprovedDistributionsInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  username?: string | null
+  displayUsername?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
+  createdInventories?: Prisma.InventoryUncheckedCreateNestedManyWithoutCreatedByInput
+  createdDistributions?: Prisma.DistributionUncheckedCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserCreateOrConnectWithoutApprovedDistributionsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutApprovedDistributionsInput, Prisma.UserUncheckedCreateWithoutApprovedDistributionsInput>
+}
+
+export type UserUpsertWithoutCreatedDistributionsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCreatedDistributionsInput, Prisma.UserUncheckedUpdateWithoutCreatedDistributionsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCreatedDistributionsInput, Prisma.UserUncheckedCreateWithoutCreatedDistributionsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCreatedDistributionsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCreatedDistributionsInput, Prisma.UserUncheckedUpdateWithoutCreatedDistributionsInput>
+}
+
+export type UserUpdateWithoutCreatedDistributionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
+  createdInventories?: Prisma.InventoryUpdateManyWithoutCreatedByNestedInput
+  approvedDistributions?: Prisma.DistributionUpdateManyWithoutApprovedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCreatedDistributionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
+  createdInventories?: Prisma.InventoryUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvedDistributions?: Prisma.DistributionUncheckedUpdateManyWithoutApprovedByNestedInput
+}
+
+export type UserUpsertWithoutApprovedDistributionsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutApprovedDistributionsInput, Prisma.UserUncheckedUpdateWithoutApprovedDistributionsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutApprovedDistributionsInput, Prisma.UserUncheckedCreateWithoutApprovedDistributionsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutApprovedDistributionsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutApprovedDistributionsInput, Prisma.UserUncheckedUpdateWithoutApprovedDistributionsInput>
+}
+
+export type UserUpdateWithoutApprovedDistributionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
+  createdInventories?: Prisma.InventoryUpdateManyWithoutCreatedByNestedInput
+  createdDistributions?: Prisma.DistributionUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutApprovedDistributionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
+  createdInventories?: Prisma.InventoryUncheckedUpdateManyWithoutCreatedByNestedInput
+  createdDistributions?: Prisma.DistributionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 
@@ -978,12 +1259,16 @@ export type UserCountOutputType = {
   sessions: number
   accounts: number
   createdInventories: number
+  createdDistributions: number
+  approvedDistributions: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   createdInventories?: boolean | UserCountOutputTypeCountCreatedInventoriesArgs
+  createdDistributions?: boolean | UserCountOutputTypeCountCreatedDistributionsArgs
+  approvedDistributions?: boolean | UserCountOutputTypeCountApprovedDistributionsArgs
 }
 
 /**
@@ -1017,6 +1302,20 @@ export type UserCountOutputTypeCountCreatedInventoriesArgs<ExtArgs extends runti
   where?: Prisma.InventoryWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCreatedDistributionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DistributionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountApprovedDistributionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DistributionWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1036,6 +1335,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   profile?: boolean | Prisma.User$profileArgs<ExtArgs>
   createdInventories?: boolean | Prisma.User$createdInventoriesArgs<ExtArgs>
+  createdDistributions?: boolean | Prisma.User$createdDistributionsArgs<ExtArgs>
+  approvedDistributions?: boolean | Prisma.User$approvedDistributionsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1063,6 +1364,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   profile?: boolean | Prisma.User$profileArgs<ExtArgs>
   createdInventories?: boolean | Prisma.User$createdInventoriesArgs<ExtArgs>
+  createdDistributions?: boolean | Prisma.User$createdDistributionsArgs<ExtArgs>
+  approvedDistributions?: boolean | Prisma.User$approvedDistributionsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 
@@ -1073,6 +1376,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     profile: Prisma.$ProfilePayload<ExtArgs> | null
     createdInventories: Prisma.$InventoryPayload<ExtArgs>[]
+    createdDistributions: Prisma.$DistributionPayload<ExtArgs>[]
+    approvedDistributions: Prisma.$DistributionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1432,6 +1737,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   profile<T extends Prisma.User$profileArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$profileArgs<ExtArgs>>): Prisma.Prisma__ProfileClient<runtime.Types.Result.GetResult<Prisma.$ProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   createdInventories<T extends Prisma.User$createdInventoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$createdInventoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  createdDistributions<T extends Prisma.User$createdDistributionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$createdDistributionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DistributionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  approvedDistributions<T extends Prisma.User$approvedDistributionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$approvedDistributionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DistributionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1910,6 +2217,54 @@ export type User$createdInventoriesArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.InventoryScalarFieldEnum | Prisma.InventoryScalarFieldEnum[]
+}
+
+/**
+ * User.createdDistributions
+ */
+export type User$createdDistributionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Distribution
+   */
+  select?: Prisma.DistributionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Distribution
+   */
+  omit?: Prisma.DistributionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DistributionInclude<ExtArgs> | null
+  where?: Prisma.DistributionWhereInput
+  orderBy?: Prisma.DistributionOrderByWithRelationInput | Prisma.DistributionOrderByWithRelationInput[]
+  cursor?: Prisma.DistributionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DistributionScalarFieldEnum | Prisma.DistributionScalarFieldEnum[]
+}
+
+/**
+ * User.approvedDistributions
+ */
+export type User$approvedDistributionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Distribution
+   */
+  select?: Prisma.DistributionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Distribution
+   */
+  omit?: Prisma.DistributionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DistributionInclude<ExtArgs> | null
+  where?: Prisma.DistributionWhereInput
+  orderBy?: Prisma.DistributionOrderByWithRelationInput | Prisma.DistributionOrderByWithRelationInput[]
+  cursor?: Prisma.DistributionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DistributionScalarFieldEnum | Prisma.DistributionScalarFieldEnum[]
 }
 
 /**

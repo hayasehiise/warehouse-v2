@@ -13,17 +13,19 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(ulid())
-  name          String    @db.Text
-  email         String
-  emailVerified Boolean   @default(false)
-  image         String?   @db.Text
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  profile       Profile?
-  createdInventories Inventory[]
+  id                    String         @id @default(ulid())
+  name                  String         @db.Text
+  email                 String
+  emailVerified         Boolean        @default(false)
+  image                 String?        @db.Text
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  sessions              Session[]
+  accounts              Account[]
+  profile               Profile?
+  createdInventories    Inventory[]
+  createdDistributions  Distribution[] @relation("DistributionCreatedBy")
+  approvedDistributions Distribution[] @relation("DistributionApprovedBy")
 
   username        String?
   displayUsername String? @db.Text
@@ -101,19 +103,19 @@ model Category {
 }
 
 model Item {
-  id          String      @id @default(ulid())
-  name        String
-  description String?     @db.Text
-  categoryId  String
-  category    Category    @relation(fields: [categoryId], references: [id])
-  deletedAt   DateTime?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  stocks      ItemStock[]
-  inventories Inventory[]
+  id                String             @id @default(ulid())
+  name              String
+  description       String?            @db.Text
+  categoryId        String
+  category          Category           @relation(fields: [categoryId], references: [id])
+  deletedAt         DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  stocks            ItemStock[]
+  inventories       Inventory[]
+  distributionItems DistributionItem[]
 
   @@index([name])
-  @@index([categoryId])
   @@map("item")
 }
 
@@ -126,7 +128,6 @@ model ItemStock {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([itemId])
   @@map("item_stock")
 }
 
@@ -143,23 +144,66 @@ enum InventoryStatus {
 }
 
 model Inventory {
-  id              String           @id @default(ulid())
+  id              String          @id @default(ulid())
   itemId          String
-  item            Item             @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  item            Item            @relation(fields: [itemId], references: [id], onDelete: Cascade)
   transactionDate DateTime
   quantity        Float
   type            InventoryType
   status          InventoryStatus
   createdById     String
-  createdBy       User             @relation(fields: [createdById], references: [id])
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  createdBy       User            @relation(fields: [createdById], references: [id])
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   @@index([itemId])
   @@index([transactionDate])
   @@index([type])
   @@index([status])
   @@map("inventory")
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Distribution {
+  id              String             @id @default(ulid())
+  transactionCode String             @unique
+  transactionDate DateTime
+  recipientName   String
+  note            String?            @db.Text
+  createdById     String
+  createdBy       User               @relation("DistributionCreatedBy", fields: [createdById], references: [id])
+  createdAt       DateTime           @default(now())
+  approvedStatus  ApprovalStatus     @default(PENDING)
+  approvedById    String?
+  approvedBy      User?              @relation("DistributionApprovedBy", fields: [approvedById], references: [id])
+  approvedAt      DateTime?
+  updatedAt       DateTime           @updatedAt
+  deletedAt       DateTime?
+  items           DistributionItem[]
+
+  @@index([approvedStatus])
+  @@index([transactionDate])
+  @@map("distribution")
+}
+
+model DistributionItem {
+  id             String       @id @default(ulid())
+  distributionId String
+  distribution   Distribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
+  itemId         String
+  item           Item         @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  quantity       Float
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@index([distributionId])
+  @@index([itemId])
+  @@map("distribution_item")
 }
 
 model Verification {

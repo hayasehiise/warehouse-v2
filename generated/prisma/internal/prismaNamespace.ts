@@ -392,6 +392,8 @@ export const ModelName = {
   Item: 'Item',
   ItemStock: 'ItemStock',
   Inventory: 'Inventory',
+  Distribution: 'Distribution',
+  DistributionItem: 'DistributionItem',
   Verification: 'Verification'
 } as const
 
@@ -408,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "profile" | "session" | "account" | "category" | "item" | "itemStock" | "inventory" | "verification"
+    modelProps: "user" | "profile" | "session" | "account" | "category" | "item" | "itemStock" | "inventory" | "distribution" | "distributionItem" | "verification"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -940,6 +942,138 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Distribution: {
+      payload: Prisma.$DistributionPayload<ExtArgs>
+      fields: Prisma.DistributionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DistributionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DistributionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionPayload>
+        }
+        findFirst: {
+          args: Prisma.DistributionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DistributionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionPayload>
+        }
+        findMany: {
+          args: Prisma.DistributionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionPayload>[]
+        }
+        create: {
+          args: Prisma.DistributionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionPayload>
+        }
+        createMany: {
+          args: Prisma.DistributionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.DistributionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionPayload>
+        }
+        update: {
+          args: Prisma.DistributionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionPayload>
+        }
+        deleteMany: {
+          args: Prisma.DistributionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DistributionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.DistributionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionPayload>
+        }
+        aggregate: {
+          args: Prisma.DistributionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDistribution>
+        }
+        groupBy: {
+          args: Prisma.DistributionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DistributionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DistributionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DistributionCountAggregateOutputType> | number
+        }
+      }
+    }
+    DistributionItem: {
+      payload: Prisma.$DistributionItemPayload<ExtArgs>
+      fields: Prisma.DistributionItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DistributionItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DistributionItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionItemPayload>
+        }
+        findFirst: {
+          args: Prisma.DistributionItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DistributionItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionItemPayload>
+        }
+        findMany: {
+          args: Prisma.DistributionItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionItemPayload>[]
+        }
+        create: {
+          args: Prisma.DistributionItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionItemPayload>
+        }
+        createMany: {
+          args: Prisma.DistributionItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.DistributionItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionItemPayload>
+        }
+        update: {
+          args: Prisma.DistributionItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.DistributionItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DistributionItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.DistributionItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DistributionItemPayload>
+        }
+        aggregate: {
+          args: Prisma.DistributionItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDistributionItem>
+        }
+        groupBy: {
+          args: Prisma.DistributionItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DistributionItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DistributionItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DistributionItemCountAggregateOutputType> | number
+        }
+      }
+    }
     Verification: {
       payload: Prisma.$VerificationPayload<ExtArgs>
       fields: Prisma.VerificationFieldRefs
@@ -1162,6 +1296,36 @@ export const InventoryScalarFieldEnum = {
 export type InventoryScalarFieldEnum = (typeof InventoryScalarFieldEnum)[keyof typeof InventoryScalarFieldEnum]
 
 
+export const DistributionScalarFieldEnum = {
+  id: 'id',
+  transactionCode: 'transactionCode',
+  transactionDate: 'transactionDate',
+  recipientName: 'recipientName',
+  note: 'note',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  approvedStatus: 'approvedStatus',
+  approvedById: 'approvedById',
+  approvedAt: 'approvedAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type DistributionScalarFieldEnum = (typeof DistributionScalarFieldEnum)[keyof typeof DistributionScalarFieldEnum]
+
+
+export const DistributionItemScalarFieldEnum = {
+  id: 'id',
+  distributionId: 'distributionId',
+  itemId: 'itemId',
+  quantity: 'quantity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DistributionItemScalarFieldEnum = (typeof DistributionItemScalarFieldEnum)[keyof typeof DistributionItemScalarFieldEnum]
+
+
 export const VerificationScalarFieldEnum = {
   id: 'id',
   identifier: 'identifier',
@@ -1280,6 +1444,27 @@ export const InventoryOrderByRelevanceFieldEnum = {
 export type InventoryOrderByRelevanceFieldEnum = (typeof InventoryOrderByRelevanceFieldEnum)[keyof typeof InventoryOrderByRelevanceFieldEnum]
 
 
+export const DistributionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  transactionCode: 'transactionCode',
+  recipientName: 'recipientName',
+  note: 'note',
+  createdById: 'createdById',
+  approvedById: 'approvedById'
+} as const
+
+export type DistributionOrderByRelevanceFieldEnum = (typeof DistributionOrderByRelevanceFieldEnum)[keyof typeof DistributionOrderByRelevanceFieldEnum]
+
+
+export const DistributionItemOrderByRelevanceFieldEnum = {
+  id: 'id',
+  distributionId: 'distributionId',
+  itemId: 'itemId'
+} as const
+
+export type DistributionItemOrderByRelevanceFieldEnum = (typeof DistributionItemOrderByRelevanceFieldEnum)[keyof typeof DistributionItemOrderByRelevanceFieldEnum]
+
+
 export const VerificationOrderByRelevanceFieldEnum = {
   id: 'id',
   identifier: 'identifier',
@@ -1334,6 +1519,13 @@ export type EnumInventoryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'InventoryStatus'
  */
 export type EnumInventoryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InventoryStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ApprovalStatus'
+ */
+export type EnumApprovalStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApprovalStatus'>
     
 
 
@@ -1461,6 +1653,8 @@ export type GlobalOmitConfig = {
   item?: Prisma.ItemOmit
   itemStock?: Prisma.ItemStockOmit
   inventory?: Prisma.InventoryOmit
+  distribution?: Prisma.DistributionOmit
+  distributionItem?: Prisma.DistributionItemOmit
   verification?: Prisma.VerificationOmit
 }
 

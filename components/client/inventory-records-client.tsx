@@ -734,6 +734,7 @@ export default function InventoryRecordsClient() {
                 <Label htmlFor="transactionDate">Tanggal Transaksi</Label>
                 <Popover>
                   <PopoverTrigger
+                    nativeButton={false}
                     render={
                       <Input
                         id="transactionDate"
